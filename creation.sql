@@ -8,21 +8,17 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
--- Schema mydb
+-- DATABASE CentreSportif
 -- -----------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `CentreSportif` DEFAULT CHARACTER SET utf8 ;
+USE `CentreSportif` ;
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Table `CentreSportif`.`Activite`
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
-USE `mydb` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Activite` ;
 
--- -----------------------------------------------------
--- Table `mydb`.`Activite`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Activite` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Activite` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Activite` (
   `id` INT NOT NULL,
   `name` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
@@ -30,11 +26,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Ligue`
+-- Table `CentreSportif`.`Ligue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Ligue` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Ligue` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Ligue` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Ligue` (
   `id` INT NOT NULL,
   `name` VARCHAR(45) NULL,
   `Activite_id` INT NOT NULL,
@@ -42,18 +38,18 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Ligue` (
   INDEX `fk_Ligue_Activite1_idx` (`Activite_id` ASC),
   CONSTRAINT `fk_Ligue_Activite1`
     FOREIGN KEY (`Activite_id`)
-    REFERENCES `mydb`.`Activite` (`id`)
+    REFERENCES `CentreSportif`.`Activite` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Competition`
+-- Table `CentreSportif`.`Competition`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Competition` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Competition` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Competition` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Competition` (
   `id` INT NOT NULL,
   `Ligue_id` INT NOT NULL,
   `Ligue_Activite_id` INT NOT NULL,
@@ -61,18 +57,18 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Competition` (
   INDEX `fk_Competition_Ligue1_idx` (`Ligue_id` ASC, `Ligue_Activite_id` ASC),
   CONSTRAINT `fk_Competition_Ligue1`
     FOREIGN KEY (`Ligue_id` , `Ligue_Activite_id`)
-    REFERENCES `mydb`.`Ligue` (`id` , `Activite_id`)
+    REFERENCES `CentreSportif`.`Ligue` (`id` , `Activite_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Equipe`
+-- Table `CentreSportif`.`Equipe`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Equipe` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Equipe` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Equipe` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Equipe` (
   `id` INT NOT NULL,
   `nom` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
@@ -80,11 +76,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Participant`
+-- Table `CentreSportif`.`Participant`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Participant` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Participant` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Participant` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Participant` (
   `id` INT NOT NULL,
   `nom` VARCHAR(45) NULL,
   `prenom` VARCHAR(45) NULL,
@@ -93,11 +89,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Equipe_has_Ligue`
+-- Table `CentreSportif`.`Equipe_has_Ligue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Equipe_has_Ligue` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Equipe_has_Ligue` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Equipe_has_Ligue` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Equipe_has_Ligue` (
   `Equipe_id` INT NOT NULL,
   `Ligue_id` INT NOT NULL,
   PRIMARY KEY (`Equipe_id`, `Ligue_id`),
@@ -105,23 +101,23 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Equipe_has_Ligue` (
   INDEX `fk_Equipe_has_Ligue_Equipe1_idx` (`Equipe_id` ASC),
   CONSTRAINT `fk_Equipe_has_Ligue_Equipe1`
     FOREIGN KEY (`Equipe_id`)
-    REFERENCES `mydb`.`Equipe` (`id`)
+    REFERENCES `CentreSportif`.`Equipe` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Equipe_has_Ligue_Ligue1`
     FOREIGN KEY (`Ligue_id`)
-    REFERENCES `mydb`.`Ligue` (`id`)
+    REFERENCES `CentreSportif`.`Ligue` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Competition_has_Equipe`
+-- Table `CentreSportif`.`Competition_has_Equipe`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Competition_has_Equipe` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Competition_has_Equipe` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Competition_has_Equipe` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Competition_has_Equipe` (
   `Competition_id` INT NOT NULL,
   `Equipe_id1` INT NOT NULL,
   `score1` INT NULL,
@@ -133,28 +129,28 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Competition_has_Equipe` (
   INDEX `fk_Competition_has_Equipe_Equipe2_idx` (`Equipe_id1` ASC),
   CONSTRAINT `fk_Competition_has_Equipe_Competition1`
     FOREIGN KEY (`Competition_id`)
-    REFERENCES `mydb`.`Competition` (`id`)
+    REFERENCES `CentreSportif`.`Competition` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Competition_has_Equipe_Equipe1`
     FOREIGN KEY (`Equipe_id2`)
-    REFERENCES `mydb`.`Equipe` (`id`)
+    REFERENCES `CentreSportif`.`Equipe` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Competition_has_Equipe_Equipe2`
     FOREIGN KEY (`Equipe_id1`)
-    REFERENCES `mydb`.`Equipe` (`id`)
+    REFERENCES `CentreSportif`.`Equipe` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Competition_has_Activite`
+-- Table `CentreSportif`.`Competition_has_Activite`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Competition_has_Activite` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Competition_has_Activite` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Competition_has_Activite` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Competition_has_Activite` (
   `Competition_id` INT NOT NULL,
   `Activite_id` INT NOT NULL,
   PRIMARY KEY (`Competition_id`, `Activite_id`),
@@ -162,23 +158,23 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Competition_has_Activite` (
   INDEX `fk_Competition_has_Activite_Competition1_idx` (`Competition_id` ASC),
   CONSTRAINT `fk_Competition_has_Activite_Competition1`
     FOREIGN KEY (`Competition_id`)
-    REFERENCES `mydb`.`Competition` (`id`)
+    REFERENCES `CentreSportif`.`Competition` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Competition_has_Activite_Activite1`
     FOREIGN KEY (`Activite_id`)
-    REFERENCES `mydb`.`Activite` (`id`)
+    REFERENCES `CentreSportif`.`Activite` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Competition_has_Resultat`
+-- Table `CentreSportif`.`Competition_has_Resultat`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Competition_has_Resultat` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Competition_has_Resultat` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Competition_has_Resultat` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Competition_has_Resultat` (
   `Competition_id` INT NOT NULL,
   `Resultat_id` INT NOT NULL,
   `Resultat_Activite_id` INT NOT NULL,
@@ -189,18 +185,18 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Competition_has_Resultat` (
   INDEX `fk_Competition_has_Resultat_Competition1_idx` (`Competition_id` ASC),
   CONSTRAINT `fk_Competition_has_Resultat_Competition1`
     FOREIGN KEY (`Competition_id`)
-    REFERENCES `mydb`.`Competition` (`id`)
+    REFERENCES `CentreSportif`.`Competition` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Participant_has_Equipe`
+-- Table `CentreSportif`.`Participant_has_Equipe`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Participant_has_Equipe` ;
+DROP TABLE IF EXISTS `CentreSportif`.`Participant_has_Equipe` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Participant_has_Equipe` (
+CREATE TABLE IF NOT EXISTS `CentreSportif`.`Participant_has_Equipe` (
   `Participant_id` INT NOT NULL,
   `Equipe_id` INT NOT NULL,
   PRIMARY KEY (`Participant_id`, `Equipe_id`),
@@ -208,12 +204,12 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Participant_has_Equipe` (
   INDEX `fk_Participant_has_Equipe_Participant1_idx` (`Participant_id` ASC),
   CONSTRAINT `fk_Participant_has_Equipe_Participant1`
     FOREIGN KEY (`Participant_id`)
-    REFERENCES `mydb`.`Participant` (`id`)
+    REFERENCES `CentreSportif`.`Participant` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Participant_has_Equipe_Equipe1`
     FOREIGN KEY (`Equipe_id`)
-    REFERENCES `mydb`.`Equipe` (`id`)
+    REFERENCES `CentreSportif`.`Equipe` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
