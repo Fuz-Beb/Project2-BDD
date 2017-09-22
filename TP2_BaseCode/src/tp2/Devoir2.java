@@ -1,6 +1,6 @@
 // Travail fait par :
-//   NomEquipier1 - Matricule
-//   NomEquipier2 - Matricule
+// NomEquipier1 - Matricule
+// NomEquipier2 - Matricule
 
 package tp2;
 
@@ -42,6 +42,10 @@ public class Devoir2
 {
     private static Connexion cx;
 
+    
+    private static PreparedStatement stmtExisteJuge;
+    private static PreparedStatement stmtInsertJuge;
+    
     /**
      * @param args
      */
@@ -52,12 +56,13 @@ public class Devoir2
             System.out.println("Usage: java tp2.Devoir2 <serveur> <bd> <user> <password> [<fichier-transactions>]");
             return;
         }
-        
+
         cx = null;
-        
+
         try
         {
             cx = new Connexion(args[0], args[1], args[2], args[3]);
+            initialiseStatements();
             BufferedReader reader = ouvrirFichier(args);
             String transaction = lireTransaction(reader);
             while (!finTransaction(transaction))
@@ -71,6 +76,18 @@ public class Devoir2
             if (cx != null)
                 cx.fermer();
         }
+    }
+
+    /**
+     * @throws SQLException 
+     * 
+     */
+    private static void initialiseStatements() throws SQLException
+    {
+        stmtExisteJuge = cx.getConnection()
+                .prepareStatement("select id, nom, telephone, limitePret, nbpret from membre where idmembre = ?");
+        stmtInsertJuge = cx.getConnection().prepareStatement(
+                "insert into membre (idmembre, nom, telephone, limitepret, nbpret) " + "values (?,?,?,?,0)");
     }
 
     /**
@@ -90,19 +107,130 @@ public class Devoir2
                 // les commandes de votre programme. Vous pouvez ajouter autant
                 // de else if que necessaire. Vous n'avez pas a traiter la
                 // commande "quitter".
-                if (command.equals("commande1"))
+                if (command.equals("ajouterJuge"))
                 {
                     // Lecture des parametres
-                    String param1 = readString(tokenizer);
-                    Date param2 = readDate(tokenizer);
-                    int param3 = readInt(tokenizer);
+                    int idJuge = readInt(tokenizer);
+                    String prenomJuge = readString(tokenizer);                    
+                    String nomJuge = readString(tokenizer);
+                    int ageJuge = readInt(tokenizer);
+
+                    // Exemple a supprimer quand on rend le projet
+                    // String param1 = readString(tokenizer);
+                    // Date param2 = readDate(tokenizer);
+                    // int param3 = readInt(tokenizer);
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerUneTransaction(param1, param2, param3);
+                    effectuerAjouterJuge(idJuge, prenomJuge, nomJuge, ageJuge);
                 }
-                else if (command.equals("commande2"))
+                else if (command.equals("retirerJuge"))
                 {
-                    // Lire les parametres ici et appeler la bonne methode
-                    // de traitement pour la transaction
+                    // Lecture des parametres
+                    int idJuge = readInt(tokenizer);
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerRetirerJuge(idJuge);                    
+                }
+                else if (command.equals("ajouterAvocat"))
+                {
+                    // Lecture des parametres
+                    int idAvocat= readInt(tokenizer);
+                    String prenomAvocat = readString(tokenizer);
+                    String nomAvocat = readString(tokenizer);
+                    int typeAvocat = readInt(tokenizer); 
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAjouterAvocat(idAvocat, prenomAvocat, nomAvocat, typeAvocat);                    
+                }
+                else if (command.equals("ajouterPartie"))
+                {
+                    // Lecture des parametres
+                    int idPartie = readInt(tokenizer);
+                    String prenomPartie = readString(tokenizer);
+                    String nomPartie = readString(tokenizer);
+                    int idAvocat = readInt(tokenizer); 
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAjouterPartie(idPartie, prenomPartie, nomPartie, idAvocat);                    
+                }
+                else if (command.equals("creerProces"))
+                {
+                    // Lecture des parametres
+                    int idProces = readInt(tokenizer);
+                    int idJuge = readInt(tokenizer);
+                    Date dateInitiale = readDate(tokenizer);
+                    int devantJury = readInt(tokenizer);
+                    int idPartieDefenderesse = readInt(tokenizer); 
+                    int idPartiePoursuivante = readInt(tokenizer); 
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerCreerProces(idProces, idJuge, dateInitiale, devantJury, idPartieDefenderesse, idPartiePoursuivante);                    
+                }
+                else if (command.equals("inscrireJury"))
+                {
+                    // Lecture des parametres
+                    int nasJury = readInt(tokenizer);
+                    String prenomJury = readString(tokenizer);                    
+                    String nomJury = readString(tokenizer);
+                    String sexeJury = readString(tokenizer);
+                    int ageJury = readInt(tokenizer);
+
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerInscrireJury(nasJury, prenomJury, nomJury, sexeJury, ageJury);
+                }
+                else if (command.equals("assignerJury"))
+                {
+                    // Lecture des parametres
+                    int nasJury = readInt(tokenizer);
+                    int idProces = readInt(tokenizer);
+
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAssignerJury(nasJury, idProces);
+                }
+                else if (command.equals("ajouterSeance"))
+                {
+                    // Lecture des parametres
+                    int idSeance = readInt(tokenizer);
+                    int idProces = readInt(tokenizer);
+                    Date dateSeance = readDate(tokenizer);
+
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAjouterSeance(idSeance, idProces, dateSeance);
+                }
+                else if (command.equals("supprimerSeance"))
+                {
+                    // Lecture des parametres
+                    int idSeance = readInt(tokenizer);
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerSupprimerSeance(idSeance);                    
+                }
+                else if (command.equals("terminerProces"))
+                {
+                    // Lecture des parametres
+                    int idProces = readInt(tokenizer);
+                    int decisionProces = readInt(tokenizer);
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerTerminerProces(idProces, decisionProces);                    
+                }
+                else if (command.equals("afficherJuges"))
+                {
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAfficherJuges();                  
+                }
+                else if (command.equals("afficherProces"))
+                {
+                    // Lecture des parametres
+                    int idProces = readInt(tokenizer);
+                    
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAfficherProces(idProces);                  
+                }
+                else if (command.equals("afficherJurys"))
+                {
+                    // Appel de la methode qui traite la transaction specifique
+                    effectuerAfficherJurys();                  
                 }
                 else
                 {
@@ -117,6 +245,44 @@ public class Devoir2
         }
     }
 
+    /**
+     * @param idJuge
+     * @param prenomJuge 
+     * @param nomJuge
+     * @param ageJuge
+     * @throws SQLException 
+     * @throws IFT287Exception 
+     */
+    private static void effectuerAjouterJuge(int idJuge, String prenomJuge, String nomJuge, int ageJuge) throws SQLException, IFT287Exception
+    {
+        try 
+        {
+            stmtExisteJuge.setInt(1, idJuge);
+            ResultSet rsetJuge = stmtExisteJuge.executeQuery();
+            
+            if (rsetJuge.next())
+            {
+                rsetJuge.close();
+                throw new IFT287Exception("Juge existe deja: " + idJuge);
+            }
+            rsetJuge.close();
+            
+            // Ajout du juge
+            stmtInsertJuge.setInt(1, idJuge);
+            stmtInsertJuge.setString(2, nomJuge);
+            stmtInsertJuge.setString(3, prenomJuge);
+            stmtInsertJuge.executeUpdate();
+            
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
+    }
+
     // Cette methode est a redefinir pour chacune de vos transactions.
     // Vous devez donner un nom significatif et utiliser les bons types de
     // parametres.
@@ -128,7 +294,7 @@ public class Devoir2
     }
 
     // ****************************************************************
-    // *   Les methodes suivantes n'ont pas besoin d'etre modifiees   *
+    // * Les methodes suivantes n'ont pas besoin d'etre modifiees *
     // ****************************************************************
 
     /**
