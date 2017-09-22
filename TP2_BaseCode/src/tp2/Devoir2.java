@@ -45,6 +45,12 @@ public class Devoir2
     
     private static PreparedStatement stmtExisteJuge;
     private static PreparedStatement stmtInsertJuge;
+    private static PreparedStatement stmtExisteAvocat;
+    private static PreparedStatement stmtInsertAvocat;
+    private static PreparedStatement stmtExistePartie;
+    private static PreparedStatement stmtInsertPartie;
+    private static PreparedStatement stmtExisteProces;
+    private static PreparedStatement stmtInsertProces;
     
     /**
      * @param args
@@ -87,7 +93,19 @@ public class Devoir2
         stmtExisteJuge = cx.getConnection()
                 .prepareStatement("select id, nom, telephone, limitePret, nbpret from membre where idmembre = ?");
         stmtInsertJuge = cx.getConnection().prepareStatement(
-                "insert into membre (idmembre, nom, telephone, limitepret, nbpret) " + "values (?,?,?,?,0)");
+                "insert into membre (idmembre, nom, telephone, limitepret, nbpret) " + "values (?,?,?,?,0)");        
+        stmtExisteAvocat = cx.getConnection()
+                .prepareStatement("AJOUTER LA SQL");
+        stmtInsertAvocat = cx.getConnection().prepareStatement(
+                "AJOUTER LA SQL");
+        stmtExistePartie = cx.getConnection()
+                .prepareStatement("AJOUTER LA SQL");
+        stmtInsertPartie = cx.getConnection().prepareStatement(
+                "AJOUTER LA SQL");
+        stmtExisteProces = cx.getConnection()
+                .prepareStatement("AJOUTER LA SQL");
+        stmtInsertProces = cx.getConnection().prepareStatement(
+                "AJOUTER LA SQL");
     }
 
     /**
@@ -246,12 +264,145 @@ public class Devoir2
     }
 
     /**
+     * Methode de traitement pour effectuerCreerProces
+     * @param idProces
+     * @param idJuge
+     * @param dateInitiale
+     * @param devantJury
+     * @param idPartieDefenderesse
+     * @param idPartiePoursuivante
+     * @throws SQLException, IFT287Exception 
+     */
+    private static void effectuerCreerProces(int idProces, int idJuge, Date dateInitiale, int devantJury,
+            int idPartieDefenderesse, int idPartiePoursuivante) throws SQLException, IFT287Exception
+    {
+        try 
+        {
+            stmtExisteProces.setInt(1, idProces);
+            ResultSet rsetProces = stmtInsertAvocat.executeQuery();
+            
+            if (rsetProces.next())
+            {
+                rsetProces.close();
+                throw new IFT287Exception("Proces existe deja: " + idProces);
+            }
+            rsetProces.close();
+            
+            // Ajout du partie
+            stmtInsertProces.setInt(1, idProces);
+            stmtInsertProces.setInt(2, idJuge);
+            stmtInsertProces.setDate(3, dateInitiale);
+            stmtInsertProces.setInt(4, devantJury);
+            stmtInsertProces.setInt(5, idPartieDefenderesse);
+            stmtInsertProces.setInt(6, idPartiePoursuivante);
+            stmtInsertProces.executeUpdate();
+            
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
+    }
+
+    /**
+     * Methode de traitement pour effectuerAjouterPartie
+     * @param idPartie
+     * @param prenomPartie
+     * @param nomPartie
+     * @param idAvocat
+     * @throws SQLException, IFT287Exception 
+     */
+    private static void effectuerAjouterPartie(int idPartie, String prenomPartie, String nomPartie, int idAvocat) throws SQLException, IFT287Exception
+    {
+        try 
+        {
+            stmtExistePartie.setInt(1, idAvocat);
+            ResultSet rsetPartie = stmtInsertAvocat.executeQuery();
+            
+            if (rsetPartie.next())
+            {
+                rsetPartie.close();
+                throw new IFT287Exception("Partie existe deja: " + idPartie);
+            }
+            rsetPartie.close();
+            
+            // Ajout du partie
+            stmtInsertPartie.setInt(1, idPartie);
+            stmtInsertPartie.setString(2, prenomPartie);
+            stmtInsertPartie.setString(3, nomPartie);
+            stmtInsertPartie.setInt(4, idAvocat);
+            stmtInsertPartie.executeUpdate();
+            
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
+    }
+
+    /**
+     * Methode de traitement pour effectuerAjouterAvocat
+     * @param idAvocat
+     * @param prenomAvocat
+     * @param nomAvocat
+     * @param typeAvocat
+     * @throws SQLException, IFT287Exception
+     */
+    private static void effectuerAjouterAvocat(int idAvocat, String prenomAvocat, String nomAvocat, int typeAvocat) throws SQLException, IFT287Exception
+    {
+        try 
+        {
+            stmtExisteAvocat.setInt(1, idAvocat);
+            ResultSet rsetAvocat = stmtInsertAvocat.executeQuery();
+            
+            if (rsetAvocat.next())
+            {
+                rsetAvocat.close();
+                throw new IFT287Exception("Avocat existe deja: " + idAvocat);
+            }
+            rsetAvocat.close();
+            
+            // Ajout de l'avocat
+            stmtInsertAvocat.setInt(1, idAvocat);
+            stmtInsertAvocat.setString(2, prenomAvocat);
+            stmtInsertAvocat.setString(3, nomAvocat);
+            stmtInsertAvocat.setInt(4, typeAvocat);
+            stmtInsertAvocat.executeUpdate();
+            
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
+    }
+
+    /**
+     * Methode de traitement pour effectuerRetirerJuge
+     * @param idJuge
+     * @throws SQLException, IFT287Exception 
+     */
+    private static void effectuerRetirerJuge(int idJuge) throws SQLException, IFT287Exception
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /**
+     * Methode de traitement pour effectuerAjouterJuge
      * @param idJuge
      * @param prenomJuge 
      * @param nomJuge
      * @param ageJuge
-     * @throws SQLException 
-     * @throws IFT287Exception 
+     * @throws SQLException, IFT287Exception 
      */
     private static void effectuerAjouterJuge(int idJuge, String prenomJuge, String nomJuge, int ageJuge) throws SQLException, IFT287Exception
     {
@@ -269,8 +420,8 @@ public class Devoir2
             
             // Ajout du juge
             stmtInsertJuge.setInt(1, idJuge);
-            stmtInsertJuge.setString(2, nomJuge);
-            stmtInsertJuge.setString(3, prenomJuge);
+            stmtInsertJuge.setString(2, prenomJuge);            
+            stmtInsertJuge.setString(3, nomJuge);
             stmtInsertJuge.executeUpdate();
             
             // Commit
@@ -281,16 +432,6 @@ public class Devoir2
             cx.rollback();
             throw e;
         }
-    }
-
-    // Cette methode est a redefinir pour chacune de vos transactions.
-    // Vous devez donner un nom significatif et utiliser les bons types de
-    // parametres.
-    // La methode donnee dans ce fichier n'est qu'un exemple.
-    public static void effectuerUneTransaction(String param1, Date param2, int param3)
-            throws SQLException, IFT287Exception
-    {
-
     }
 
     // ****************************************************************
