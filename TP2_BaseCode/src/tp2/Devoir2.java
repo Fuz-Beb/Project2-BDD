@@ -66,6 +66,8 @@ public class Devoir2
     private static PreparedStatement stmtVerificationSeanceDate;    
     private static PreparedStatement stmtVerificationSeanceDecision;
     private static PreparedStatement stmtSupprimerSeance;
+    private static PreparedStatement stmtExisteProcesSeances;
+    private static PreparedStatement stmtTerminerProcesSeance;
     
     /**
      * La fonction principale
@@ -142,7 +144,7 @@ public class Devoir2
         stmtSelectJurys = cx.getConnection()
                 .prepareStatement("select * from Jury where Proces_id is null");
         stmtTerminerProces = cx.getConnection()
-                .prepareStatement("update Proces set (decision) " + "values (?)");
+                .prepareStatement("update Proces set (decision) " + "values (?) where date < CURDATE()");
         stmtJugeDisponible = cx.getConnection()
                 .prepareStatement("select * from Proces where Juge_id = ?");
         stmtJugeRetirer = cx.getConnection()
@@ -150,7 +152,12 @@ public class Devoir2
         stmtVerificationSeanceDate = cx.getConnection()
                 .prepareStatement("select * from Seance where date > CURDATE() and id = ?");
         stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from Seance where id = ?");
-        
+        stmtVerificationSeanceDecision = cx.getConnection()
+                .prepareStatement("select * from Proces where id = ? and decision is null");
+        stmtExisteProcesSeances = cx.getConnection()
+                .prepareStatement("select * from Seance where Proces_id = ? and date > CURDATE()");
+        stmtTerminerProcesSeance = cx.getConnection()
+                .prepareStatement("delete from Seance where id = ?");
     }
 
     /**
@@ -408,6 +415,7 @@ public class Devoir2
         {
             stmtExisteProces.setInt(1, idProces);
             ResultSet rsetExisteProces = stmtExisteProces.executeQuery();
+            ResultSet rsetExisteProcesSeances;
             
             if (rsetExisteProces.next())
             {
@@ -420,6 +428,22 @@ public class Devoir2
             stmtTerminerProces.setInt(1, idProces);
             stmtTerminerProces.setInt(2, decisionProces);
             
+            stmtTerminerProces.executeQuery();
+            
+            // Suppression des séances 
+            rsetExisteProces = stmtTerminerProces.executeQuery();
+            
+            
+                // Rechercher les seances du proces
+            stmtExisteProcesSeances.setInt(1, idProces);
+            rsetExisteProcesSeances = stmtExisteProcesSeances.executeQuery();
+            
+            while(rsetExisteProcesSeances.next())
+            {
+                stmtTerminerProcesSeance.setInt(1, rsetExisteProcesSeances.getInt(1));
+                stmtTerminerProcesSeance.executeQuery();
+            }
+    
             // Commit
             cx.commit();
         }
@@ -458,9 +482,7 @@ public class Devoir2
             
             idProces = rsetSeanceDate.getInt(2);
             
-            stmtVerificationSeanceDecision = cx.getConnection()
-                    .prepareStatement("select * from Proces where id = " + idProces + " and decision is null");
-            
+            stmtVerificationSeanceDecision.setInt(1, idProces);
             rsetSeanceDecision = stmtVerificationSeanceDecision.executeQuery();
             
             if (rsetSeanceDecision.next())
@@ -731,7 +753,7 @@ public class Devoir2
             if (!rsetJugeDisponible.next())
             {
                 rsetJugeDisponible.close();
-                throw new IFT287Exception("Juge non disponible: " + idAvocat);
+                throw new IFT287Exception("Juge non disponible: " + idJuge);
             }
             rsetJugeDisponible.close();
             
