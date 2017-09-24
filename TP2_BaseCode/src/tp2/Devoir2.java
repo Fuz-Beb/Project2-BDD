@@ -103,41 +103,43 @@ public class Devoir2
     private static void initialiseStatements() throws SQLException
     {
         stmtExisteJuge = cx.getConnection()
-                .prepareStatement("select id, prenom, nom, age from Juge where id = ?");
+                .prepareStatement("select * from Juge where id = ?");
         stmtInsertJuge = cx.getConnection().prepareStatement(
                 "insert into Juge (id, prenom, nom, age) " + "values (?,?,?,?)");        
         stmtExisteAvocat = cx.getConnection()
-                .prepareStatement("select id, prenom, nom, type from Avocat where id = ?");
+                .prepareStatement("select * from Avocat where id = ?");
         stmtInsertAvocat = cx.getConnection().prepareStatement(
                 "insert into Avocat (id, prenom, nom, type) " + "values (?,?,?,?)");
         stmtExistePartie = cx.getConnection()
-                .prepareStatement("select id, prenom, nom, Avocat_id from Partie where id = ?");
+                .prepareStatement("select * from Partie where id = ?");
         stmtInsertPartie = cx.getConnection().prepareStatement(
                 "insert into Partie (id, prenom, nom, Avocat_id) " + "values (?,?,?,?)");
         stmtExisteProces = cx.getConnection()
-                .prepareStatement("select id, date, devantJury, Juge_id, PartieDefenderesse_id, PartiePoursuivant_id from Proces where id = ?");
+                .prepareStatement("select * from Proces where id = ?");
         stmtInsertProces = cx.getConnection().prepareStatement(
                 "insert into Proces (id, date, devantJury, Juge_id, PartieDefenderesse_id, PartiePoursuivant_id) " + "values (?,?,?,?,?,?)");
         stmtExisteJury = cx.getConnection()
-                .prepareStatement("select nas, prenom, nom, sexe, age, Proces_id from Jury where nas = ?");
+                .prepareStatement("select * from Jury where nas = ?");
         stmtInsertJury = cx.getConnection().prepareStatement(
                 "insert into Jury (nas, prenom, nom, sexe, age, Proces_id) " + "values (?,?,?,?,?,?)");
         stmtExisteJuryDansProces = cx.getConnection()
-                .prepareStatement("select Proces_id from Jury where Proces_id = ?");
+                .prepareStatement("select * from Jury where Proces_id = ?");
         stmtInsertJuryDansProces = cx.getConnection().prepareStatement(
                 "update Jury set (Proces_id) " + "values (?)");
         stmtExisteSeance = cx.getConnection()
-                .prepareStatement("AJOUTER LA SQL");
+                .prepareStatement("select * from Seance where id = ?");
         stmtInsertSeance = cx.getConnection().prepareStatement(
-                "AJOUTER LA SQL");
+                "insert into Seance (id, date, Proces_id) " + "values (?,?,?)");
         stmtSelectJuges = cx.getConnection()
-                .prepareStatement("AJOUTER LA SQL");
+                .prepareStatement("select * from Juge");
         stmtSelectProces = cx.getConnection()
-                .prepareStatement("AJOUTER LA SQL");
+                .prepareStatement("select * from Proces");
         stmtSelectJurys = cx.getConnection()
-                .prepareStatement("AJOUTER LA SQL");
+                .prepareStatement("select * from Jury where Proces_id IS NULL");
         stmtTerminerProces = cx.getConnection()
-                .prepareStatement("AJOUTER LA SQL");
+                .prepareStatement("update Proces set (decision) " + "values (?)");
+        
+        stmtJugeDisponible = cx.getConnection().prepareStatement("select ");
     }
 
     /**
