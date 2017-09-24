@@ -61,6 +61,11 @@ public class Devoir2
     private static PreparedStatement stmtSelectProces;
     private static PreparedStatement stmtSelectJurys;
     private static PreparedStatement stmtTerminerProces;
+    private static PreparedStatement stmtJugeDisponible;
+    private static PreparedStatement stmtJugeRetirer;
+    private static PreparedStatement stmtVerificationSeanceDate;    
+    private static PreparedStatement stmtVerificationSeanceDecision;
+    private static PreparedStatement stmtSupprimerSeance;
     
     /**
      * La fonction principale
@@ -135,11 +140,17 @@ public class Devoir2
         stmtSelectProces = cx.getConnection()
                 .prepareStatement("select * from Proces");
         stmtSelectJurys = cx.getConnection()
-                .prepareStatement("select * from Jury where Proces_id IS NULL");
+                .prepareStatement("select * from Jury where Proces_id is null");
         stmtTerminerProces = cx.getConnection()
                 .prepareStatement("update Proces set (decision) " + "values (?)");
+        stmtJugeDisponible = cx.getConnection()
+                .prepareStatement("select * from Proces where Juge_id = ?");
+        stmtJugeRetirer = cx.getConnection()
+                .prepareStatement("delete from juge where Juge_id = ?");
+        stmtVerificationSeanceDate = cx.getConnection()
+                .prepareStatement("select * from Seance where date > CURDATE() and id = ?");
+        stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from Seance where id = ?");
         
-        stmtJugeDisponible = cx.getConnection().prepareStatement("select ");
     }
 
     /**
@@ -344,7 +355,7 @@ public class Devoir2
             }
             rsetSeance.close();
             
-            // Ajout du partie
+            // Afficher le proces
             stmtSelectProces.setInt(1, idProces);
             
             // Commit
@@ -405,7 +416,7 @@ public class Devoir2
             }
             rsetExisteProces.close();
             
-            // Ajout du partie
+            // Terminer le proces
             stmtTerminerProces.setInt(1, idProces);
             stmtTerminerProces.setInt(2, decisionProces);
             
@@ -426,8 +437,51 @@ public class Devoir2
      */
     private static void effectuerSupprimerSeance(int idSeance) throws SQLException, IFT287Exception
     {
-        // TODO Auto-generated method stub
-        
+        try 
+        {
+            int idProces;
+            stmtVerificationSeanceDate.setInt(1, idSeance);
+            ResultSet rsetSeanceDate = stmtVerificationSeanceDate.executeQuery();
+            ResultSet rsetSeanceDecision;
+            
+            
+            // Si la date est déjà passée ou non
+            if (!rsetSeanceDate.next())
+            {
+                rsetSeanceDate.close();
+                throw new IFT287Exception("La seance: " + idSeance + " est deja passe!");
+            }            
+            
+            rsetSeanceDate.close();
+            
+            // Si le proces est en cours ou terminé
+            
+            idProces = rsetSeanceDate.getInt(2);
+            
+            stmtVerificationSeanceDecision = cx.getConnection()
+                    .prepareStatement("select * from Proces where id = " + idProces + " and decision is null");
+            
+            rsetSeanceDecision = stmtVerificationSeanceDecision.executeQuery();
+            
+            if (rsetSeanceDecision.next())
+            {
+                rsetSeanceDecision.close();
+                throw new IFT287Exception("Le proces: " + idProces + " n est pas termine!");
+            }
+
+            rsetSeanceDecision.close();
+            
+            // Suppression de la seance
+            stmtSupprimerSeance.setInt(1, idSeance);
+              
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        } 
     }
 
     /**
@@ -669,8 +723,30 @@ public class Devoir2
      */
     private static void effectuerRetirerJuge(int idJuge) throws SQLException, IFT287Exception
     {
-        // TODO Auto-generated method stub
-        
+        try 
+        {
+            stmtJugeDisponible.setInt(1, idJuge);
+            ResultSet rsetJugeDisponible = stmtJugeDisponible.executeQuery();
+            
+            if (!rsetJugeDisponible.next())
+            {
+                rsetJugeDisponible.close();
+                throw new IFT287Exception("Juge non disponible: " + idAvocat);
+            }
+            rsetJugeDisponible.close();
+            
+            // Ajout de l'avocat
+            stmtJugeRetirer.setInt(1,idJuge);
+            stmtJugeRetirer.executeUpdate();
+            
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
     }
 
     /**
