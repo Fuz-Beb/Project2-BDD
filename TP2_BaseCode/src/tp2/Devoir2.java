@@ -110,54 +110,54 @@ public class Devoir2
     private static void initialiseStatements() throws SQLException
     {
         stmtExisteJuge = cx.getConnection()
-                .prepareStatement("select * from Juge where id = ?");
+                .prepareStatement("select * from \"Juge\" where id = ?");
         stmtInsertJuge = cx.getConnection().prepareStatement(
-                "insert into Juge (id, prenom, nom, age) " + "values (?,?,?,?)");        
+                "insert into \"Juge\" (id, prenom, nom, age) " + "values (?,?,?,?)");        
         stmtExisteAvocat = cx.getConnection()
-                .prepareStatement("select * from Avocat where id = ?");
+                .prepareStatement("select * from \"Avocat\" where id = ?");
         stmtInsertAvocat = cx.getConnection().prepareStatement(
-                "insert into Avocat (id, prenom, nom, type) " + "values (?,?,?,?)");
+                "insert into \"Avocat\" (id, prenom, nom, type) " + "values (?,?,?,?)");
         stmtExistePartie = cx.getConnection()
-                .prepareStatement("select * from Partie where id = ?");
+                .prepareStatement("select * from \"Partie\" where id = ?");
         stmtInsertPartie = cx.getConnection().prepareStatement(
-                "insert into Partie (id, prenom, nom, Avocat_id) " + "values (?,?,?,?)");
+                "insert into \"Partie\" (id, prenom, nom, Avocat_id) " + "values (?,?,?,?)");
         stmtExisteProces = cx.getConnection()
-                .prepareStatement("select * from Proces where id = ?");
+                .prepareStatement("select * from \"Proces\" where id = ?");
         stmtInsertProces = cx.getConnection().prepareStatement(
-                "insert into Proces (id, date, devantJury, Juge_id, PartieDefenderesse_id, PartiePoursuivant_id) " + "values (?,?,?,?,?,?)");
+                "insert into \"Proces\" (id, date, devantJury, Juge_id, PartieDefenderesse_id, PartiePoursuivant_id) " + "values (?,?,?,?,?,?)");
         stmtExisteJury = cx.getConnection()
-                .prepareStatement("select * from Jury where nas = ?");
+                .prepareStatement("select * from \"Jury\" where nas = ?");
         stmtInsertJury = cx.getConnection().prepareStatement(
-                "insert into Jury (nas, prenom, nom, sexe, age, Proces_id) " + "values (?,?,?,?,?,?)");
+                "insert into \"Jury\" (nas, prenom, nom, sexe, age, Proces_id) " + "values (?,?,?,?,?,?)");
         stmtExisteJuryDansProces = cx.getConnection()
-                .prepareStatement("select * from Jury where Proces_id = ?");
+                .prepareStatement("select * from \"Jury\" where Proces_id = ?");
         stmtInsertJuryDansProces = cx.getConnection().prepareStatement(
-                "update Jury set (Proces_id) " + "values (?)");
+                "update \"Jury\" set (Proces_id) " + "values (?)");
         stmtExisteSeance = cx.getConnection()
-                .prepareStatement("select * from Seance where id = ?");
+                .prepareStatement("select * from \"Seance\" where id = ?");
         stmtInsertSeance = cx.getConnection().prepareStatement(
-                "insert into Seance (id, date, Proces_id) " + "values (?,?,?)");
+                "insert into \"Seance\" (id, date, Proces_id) " + "values (?,?,?)");
         stmtSelectJuges = cx.getConnection()
-                .prepareStatement("select * from Juge");
+                .prepareStatement("select * from \"Juge\"");
         stmtSelectProces = cx.getConnection()
-                .prepareStatement("select * from Proces");
+                .prepareStatement("select * from \"Proces\"");
         stmtSelectJurys = cx.getConnection()
-                .prepareStatement("select * from Jury where Proces_id is null");
+                .prepareStatement("select * from \"Jury\" where Proces_id is null");
         stmtTerminerProces = cx.getConnection()
-                .prepareStatement("update Proces set (decision) " + "values (?) where date < CURDATE()");
+                .prepareStatement("update \"Proces\" set (decision) " + "values (?) where date < CURDATE()");
         stmtJugeDisponible = cx.getConnection()
-                .prepareStatement("select * from Proces where Juge_id = ?");
+                .prepareStatement("select * from \"Proces\" where Juge_id = ?");
         stmtJugeRetirer = cx.getConnection()
-                .prepareStatement("delete from juge where Juge_id = ?");
+                .prepareStatement("delete from \"Juge\" where Juge_id = ?");
         stmtVerificationSeanceDate = cx.getConnection()
-                .prepareStatement("select * from Seance where date > CURDATE() and id = ?");
-        stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from Seance where id = ?");
+                .prepareStatement("select * from \"Seance\" where date > CURDATE() and id = ?");
+        stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where id = ?");
         stmtVerificationSeanceDecision = cx.getConnection()
-                .prepareStatement("select * from Proces where id = ? and decision is null");
+                .prepareStatement("select * from \"Proces\" where id = ? and decision is null");
         stmtExisteProcesSeances = cx.getConnection()
-                .prepareStatement("select * from Seance where Proces_id = ? and date > CURDATE()");
+                .prepareStatement("select * from \"Seance\" where Proces_id = ? and date > CURDATE()");
         stmtTerminerProcesSeance = cx.getConnection()
-                .prepareStatement("delete from Seance where id = ?");
+                .prepareStatement("delete from \"Seance\" where id = ?");
     }
 
     /**
