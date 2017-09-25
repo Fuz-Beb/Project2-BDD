@@ -55,9 +55,9 @@ CREATE TABLE  "Partie" (
 -- -----------------------------------------------------
 CREATE TABLE  "Proces" (
   "id" INT UNIQUE,
+  "Juge_id" INT NOT NULL,
   "date" TIMESTAMP NOT NULL,
   "devantJury" INT NOT NULL,
-  "Juge_id" INT NOT NULL,
   "PartieDefenderesse_id" INT NOT NULL,
   "PartiePoursuivant_id" INT NOT NULL,
   "decision" INT NULL,
@@ -110,17 +110,3 @@ CREATE TABLE  "Jury" (
     REFERENCES "Proces" ("id")
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
-
-
-CREATE SEQUENCE  "Juge_id_sequence";
-ALTER TABLE "Juge" ALTER COLUMN "id" SET DEFAULT NEXTVAL('"Juge_id_sequence"');
-CREATE SEQUENCE  "Avocat_id_sequence";
-ALTER TABLE "Avocat" ALTER COLUMN "id" SET DEFAULT NEXTVAL('"Avocat_id_sequence"');
-CREATE SEQUENCE  "Partie_id_sequence";
-ALTER TABLE "Partie" ALTER COLUMN "id" SET DEFAULT NEXTVAL('"Partie_id_sequence"');
-CREATE SEQUENCE  "Proces_id_sequence";
-ALTER TABLE "Proces" ALTER COLUMN "id" SET DEFAULT NEXTVAL('"Proces_id_sequence"');
-CREATE SEQUENCE  "Seance_id_sequence";
-ALTER TABLE "Seance" ALTER COLUMN "id" SET DEFAULT NEXTVAL('"Seance_id_sequence"');
-CREATE SEQUENCE  "Jury_nas_sequence";
-ALTER TABLE "Jury" ALTER COLUMN "nas" SET DEFAULT NEXTVAL('"Jury_nas_sequence"');
