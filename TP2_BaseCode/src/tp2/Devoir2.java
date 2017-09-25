@@ -120,42 +120,42 @@ public class Devoir2
         stmtExistePartie = cx.getConnection()
                 .prepareStatement("select * from \"Partie\" where id = ?");
         stmtInsertPartie = cx.getConnection().prepareStatement(
-                "insert into \"Partie\" (id, prenom, nom, Avocat_id) " + "values (?,?,?,?)");
+                "insert into \"Partie\" (id, prenom, nom, \"Avocat_id\") " + "values (?,?,?,?)");
         stmtExisteProces = cx.getConnection()
                 .prepareStatement("select * from \"Proces\" where id = ?");
         stmtInsertProces = cx.getConnection().prepareStatement(
-                "insert into \"Proces\" (id, date, devantJury, Juge_id, PartieDefenderesse_id, PartiePoursuivant_id) " + "values (?,?,?,?,?,?)");
+                "insert into \"Proces\" (id, \"Juge_id\",  date, \"devantJury\", \"PartieDefenderesse_id\", \"PartiePoursuivant_id\") " + "values (?,?,?,?,?,?)");
         stmtExisteJury = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where nas = ?");
         stmtInsertJury = cx.getConnection().prepareStatement(
-                "insert into \"Jury\" (nas, prenom, nom, sexe, age, Proces_id) " + "values (?,?,?,?,?,?)");
+                "insert into \"Jury\" (nas, prenom, nom, sexe, age, \"Proces_id\") " + "values (?,?,?,?,?,?)");
         stmtExisteJuryDansProces = cx.getConnection()
-                .prepareStatement("select * from \"Jury\" where Proces_id = ?");
+                .prepareStatement("select * from \"Jury\" where \"Proces_id\" = ?");
         stmtInsertJuryDansProces = cx.getConnection().prepareStatement(
-                "update \"Jury\" set (Proces_id) " + "values (?)");
+                "update \"Jury\" set \"Proces_id\" = ? where ? = nas");
         stmtExisteSeance = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where id = ?");
         stmtInsertSeance = cx.getConnection().prepareStatement(
-                "insert into \"Seance\" (id, date, Proces_id) " + "values (?,?,?)");
+                "insert into \"Seance\" (id, date, \"Proces_id\") " + "values (?,?,?)");
         stmtSelectJuges = cx.getConnection()
                 .prepareStatement("select * from \"Juge\"");
         stmtSelectProces = cx.getConnection()
                 .prepareStatement("select * from \"Proces\"");
         stmtSelectJurys = cx.getConnection()
-                .prepareStatement("select * from \"Jury\" where Proces_id is null");
+                .prepareStatement("select * from \"Jury\" where \"Proces_id\" is null");
         stmtTerminerProces = cx.getConnection()
-                .prepareStatement("update \"Proces\" set (decision) " + "values (?) where date < CURDATE()");
+                .prepareStatement("update \"Proces\" set (decision) " + "values (?) where date < current_date");
         stmtJugeDisponible = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where Juge_id = ?");
+                .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ?");
         stmtJugeRetirer = cx.getConnection()
-                .prepareStatement("delete from \"Juge\" where Juge_id = ?");
+                .prepareStatement("delete from \"Juge\" where \"Juge_id\" = ?");
         stmtVerificationSeanceDate = cx.getConnection()
-                .prepareStatement("select * from \"Seance\" where date > CURDATE() and id = ?");
+                .prepareStatement("select * from \"Seance\" where date > current_date and id = ?");
         stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where id = ?");
         stmtVerificationSeanceDecision = cx.getConnection()
                 .prepareStatement("select * from \"Proces\" where id = ? and decision is null");
         stmtExisteProcesSeances = cx.getConnection()
-                .prepareStatement("select * from \"Seance\" where Proces_id = ? and date > CURDATE()");
+                .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ? and date > current_date");
         stmtTerminerProcesSeance = cx.getConnection()
                 .prepareStatement("delete from \"Seance\" where id = ?");
     }
@@ -386,12 +386,14 @@ public class Devoir2
         {
             ResultSet rsetJuges = stmtSelectJuges.executeQuery();
             
-            if (rsetJuges.next())
+            if (!rsetJuges.next())
             {
                 rsetJuges.close();
                 throw new IFT287Exception("Erreur dans l'affichage des juges!");
             }
             rsetJuges.close();
+            
+            System.out.println(" Affichage des juges: ");
             
             // Commit
             cx.commit();
@@ -563,8 +565,8 @@ public class Devoir2
             rsetJuryDansProces.close();
             
             // Ajout du jury
-            stmtInsertJuryDansProces.setInt(1, nasJury);
-            stmtInsertJuryDansProces.setInt(2, idProces);
+            stmtInsertJuryDansProces.setInt(1, idProces);
+            stmtInsertJuryDansProces.setInt(2, nasJury);
             
             // Commit
             cx.commit();
