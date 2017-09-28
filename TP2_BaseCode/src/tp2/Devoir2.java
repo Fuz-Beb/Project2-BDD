@@ -42,7 +42,7 @@ public class Devoir2
 {
     private static Connexion cx;
 
-    
+    private static PreparedStatement stmtExisteProcesDansSeance;
     private static PreparedStatement stmtExisteJuge;
     private static PreparedStatement stmtInsertJuge;
     private static PreparedStatement stmtExisteAvocat;
@@ -86,7 +86,7 @@ public class Devoir2
 
         try
         {
-            cx = new Connexion(args[0], args[1], args[2], args[3]);
+            cx = new Connexion(args[0], args[1], args[2], args[3]); 
             initialiseStatements();
             BufferedReader reader = ouvrirFichier(args);
             String transaction = lireTransaction(reader);
@@ -109,6 +109,8 @@ public class Devoir2
      */
     private static void initialiseStatements() throws SQLException
     {
+        stmtExisteProcesDansSeance = cx.getConnection()
+                .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ?");
         stmtExisteJuge = cx.getConnection()
                 .prepareStatement("select * from \"Juge\" where id = ?");
         stmtInsertJuge = cx.getConnection().prepareStatement(
@@ -124,7 +126,7 @@ public class Devoir2
         stmtExisteProces = cx.getConnection()
                 .prepareStatement("select * from \"Proces\" where id = ?");
         stmtInsertProces = cx.getConnection().prepareStatement(
-                "insert into \"Proces\" (id, \"Juge_id\",  date, \"devantJury\", \"PartieDefenderesse_id\", \"PartiePoursuivant_id\") " + "values (?,?,?,?,?,?)");
+                "insert into \"Proces\" (id, \"Juge_id\", date, \"devantJury\", \"PartieDefenderesse_id\", \"PartiePoursuivant_id\") " + "values (?,?,?,?,?,?)");
         stmtExisteJury = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where nas = ?");
         stmtInsertJury = cx.getConnection().prepareStatement(
@@ -132,7 +134,7 @@ public class Devoir2
         stmtExisteJuryDansProces = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where \"Proces_id\" = ?");
         stmtInsertJuryDansProces = cx.getConnection().prepareStatement(
-                "update \"Jury\" set \"Proces_id\" = ? where ? = nas");
+                "update \"Jury\" set (\"Proces_id\") = ? where nas = ?");
         stmtExisteSeance = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where id = ?");
         stmtInsertSeance = cx.getConnection().prepareStatement(
@@ -140,7 +142,7 @@ public class Devoir2
         stmtSelectJuges = cx.getConnection()
                 .prepareStatement("select * from \"Juge\"");
         stmtSelectProces = cx.getConnection()
-                .prepareStatement("select * from \"Proces\"");
+                .prepareStatement("select * from \"Proces\" where id = ?");
         stmtSelectJurys = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where \"Proces_id\" is null");
         stmtTerminerProces = cx.getConnection()
@@ -352,18 +354,20 @@ public class Devoir2
     {
         try 
         {
-            stmtExisteSeance.setInt(1, idProces);
-            ResultSet rsetSeance = stmtInsertJury.executeQuery();
+            // Affichage du proces
+            stmtSelectProces.setInt(1, idProces);
+            ResultSet rsetProces = stmtSelectProces.executeQuery();
             
-            if (rsetSeance.next())
+            if (rsetProces.next())
             {
-                rsetSeance.close();
+                rsetProces.close();
                 throw new IFT287Exception("Erreur avec l'affichage du proces: " + idProces);
             }
-            rsetSeance.close();
+            rsetProces.close();
             
-            // Afficher le proces
-            stmtSelectProces.setInt(1, idProces);
+            // Affichage des seance liees au proces
+            stmtExisteProcesDansSeance.setInt(1, idProces);
+            stmtExisteProcesDansSeance.executeQuery();
             
             // Commit
             cx.commit();
@@ -386,14 +390,12 @@ public class Devoir2
         {
             ResultSet rsetJuges = stmtSelectJuges.executeQuery();
             
-            if (!rsetJuges.next())
+            if (rsetJuges.next())
             {
                 rsetJuges.close();
                 throw new IFT287Exception("Erreur dans l'affichage des juges!");
             }
             rsetJuges.close();
-            
-            System.out.println(" Affichage des juges: ");
             
             // Commit
             cx.commit();
@@ -799,6 +801,7 @@ public class Devoir2
             stmtInsertJuge.setInt(1, idJuge);
             stmtInsertJuge.setString(2, prenomJuge);            
             stmtInsertJuge.setString(3, nomJuge);
+            stmtInsertJuge.setInt(4, ageJuge);
             stmtInsertJuge.executeUpdate();
             
             // Commit
