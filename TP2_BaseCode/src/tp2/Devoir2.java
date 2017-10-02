@@ -62,18 +62,18 @@ public class Devoir2
     private static PreparedStatement stmtSelectJurys;
     private static PreparedStatement stmtTerminerProces;
     private static PreparedStatement stmtJugeDisponible;
-    private static PreparedStatement stmtJugeVerification;
     private static PreparedStatement stmtJugeRetirer;
-    private static PreparedStatement stmtVerificationSeanceDate;    
+    private static PreparedStatement stmtVerificationSeanceDate;
     private static PreparedStatement stmtVerificationSeanceDecision;
     private static PreparedStatement stmtSupprimerSeance;
     private static PreparedStatement stmtExisteProcesSeances;
     private static PreparedStatement stmtTerminerProcesSeance;
-    
+
     /**
      * La fonction principale
+     * 
      * @param args
-     * @throws Exception 
+     * @throws Exception
      */
     public static void main(String[] args) throws Exception
     {
@@ -87,7 +87,7 @@ public class Devoir2
 
         try
         {
-            cx = new Connexion(args[0], args[1], args[2], args[3]); 
+            cx = new Connexion(args[0], args[1], args[2], args[3]);
             initialiseStatements();
             BufferedReader reader = ouvrirFichier(args);
             String transaction = lireTransaction(reader);
@@ -105,64 +105,51 @@ public class Devoir2
     }
 
     /**
-     * @throws SQLException 
+     * @throws SQLException
      * 
      */
     private static void initialiseStatements() throws SQLException
     {
         stmtExisteProcesDansSeance = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ?");
-        stmtExisteJuge = cx.getConnection()
-                .prepareStatement("select * from \"Juge\" where id = ?");
-        stmtInsertJuge = cx.getConnection().prepareStatement(
-                "insert into \"Juge\" (id, prenom, nom, age) " + "values (?,?,?,?)");        
-        stmtExisteAvocat = cx.getConnection()
-                .prepareStatement("select * from \"Avocat\" where id = ?");
-        stmtInsertAvocat = cx.getConnection().prepareStatement(
-                "insert into \"Avocat\" (id, prenom, nom, type) " + "values (?,?,?,?)");
-        stmtExistePartie = cx.getConnection()
-                .prepareStatement("select * from \"Partie\" where id = ?");
-        stmtInsertPartie = cx.getConnection().prepareStatement(
-                "insert into \"Partie\" (id, prenom, nom, \"Avocat_id\") " + "values (?,?,?,?)");
-        stmtExisteProces = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where id = ?");
+        stmtExisteJuge = cx.getConnection().prepareStatement("select * from \"Juge\" where \"id\" = ?");
+        stmtInsertJuge = cx.getConnection()
+                .prepareStatement("insert into \"Juge\" (id, prenom, nom, age) " + "values (?,?,?,?)");
+        stmtExisteAvocat = cx.getConnection().prepareStatement("select * from \"Avocat\" where \"id\" = ?");
+        stmtInsertAvocat = cx.getConnection()
+                .prepareStatement("insert into \"Avocat\" (id, prenom, nom, type) " + "values (?,?,?,?)");
+        stmtExistePartie = cx.getConnection().prepareStatement("select * from \"Partie\" where \"id\" = ?");
+        stmtInsertPartie = cx.getConnection()
+                .prepareStatement("insert into \"Partie\" (id, prenom, nom, \"Avocat_id\") " + "values (?,?,?,?)");
+        stmtExisteProces = cx.getConnection().prepareStatement("select * from \"Proces\" where \"id\" = ?");
         stmtInsertProces = cx.getConnection().prepareStatement(
-                "insert into \"Proces\" (id, \"Juge_id\", date, \"devantJury\", \"PartieDefenderesse_id\", \"PartiePoursuivant_id\") " + "values (?,?,?,?,?,?)");
-        stmtExisteJury = cx.getConnection()
-                .prepareStatement("select * from \"Jury\" where nas = ?");
+                "insert into \"Proces\" (id, \"Juge_id\", date, \"devantJury\", \"PartieDefenderesse_id\", \"PartiePoursuivant_id\") "
+                        + "values (?,?,?,?,?,?)");
+        stmtExisteJury = cx.getConnection().prepareStatement("select * from \"Jury\" where \"nas\" = ?");
         stmtInsertJury = cx.getConnection().prepareStatement(
-                "insert into \"Jury\" (nas, prenom, nom, sexe, age, \"Proces_id\") " + "values (?,?,?,?,?,null)");
+                "insert into \"Jury\" (nas, prenom, nom, sexe, age) " + "values (?,?,?,?,?)");
         stmtExisteJuryDansProces = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where \"Proces_id\" = ?");
-        stmtInsertJuryDansProces = cx.getConnection().prepareStatement(
-                "update \"Jury\" set \"Proces_id\" = ? where \"nas\" = ?");
-        stmtExisteSeance = cx.getConnection()
-                .prepareStatement("select * from \"Seance\" where id = ?");
-        stmtInsertSeance = cx.getConnection().prepareStatement(
-                "insert into \"Seance\" (id, date, \"Proces_id\") " + "values (?,?,?)");
-        stmtSelectJuges = cx.getConnection()
-                .prepareStatement("select * from \"Juge\"");
-        stmtSelectProces = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where id = ?");
-        stmtSelectJurys = cx.getConnection()
-                .prepareStatement("select * from \"Jury\" where \"Proces_id\" is null");
+        stmtInsertJuryDansProces = cx.getConnection()
+                .prepareStatement("update \"Jury\" set (\"Proces_id\") = ? where \"nas\" = ?");
+        stmtExisteSeance = cx.getConnection().prepareStatement("select * from \"Seance\" where \"id\" = ?");
+        stmtInsertSeance = cx.getConnection()
+                .prepareStatement("insert into \"Seance\" (id, date, \"Proces_id\") " + "values (?,?,?)");
+        stmtSelectJuges = cx.getConnection().prepareStatement("select * from \"Juge\"");
+        stmtSelectProces = cx.getConnection().prepareStatement("select * from \"Proces\" where \"id\" = ?");
+        stmtSelectJurys = cx.getConnection().prepareStatement("select * from \"Jury\" where \"Proces_id\" is null");
         stmtTerminerProces = cx.getConnection()
-                .prepareStatement("update \"Proces\" set (decision) " + "values (?) where date < current_date");
-        stmtJugeDisponible = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ?");
-        stmtJugeVerification = cx.getConnection()
-                .prepareStatement("select * from \"Juge\" where \"id\" = ?");
-        stmtJugeRetirer = cx.getConnection()
-                .prepareStatement("delete from \"Juge\" where \"id\" = ?");
+                .prepareStatement("update \"Proces\" set (decision) " + "values (?) where \"date\" < current_date");
+        stmtJugeDisponible = cx.getConnection().prepareStatement("select * from \"Proces\" where \"Juge_id\" = ?");
+        stmtJugeRetirer = cx.getConnection().prepareStatement("delete from \"Juge\" where \"Juge_id\" = ?");
         stmtVerificationSeanceDate = cx.getConnection()
-                .prepareStatement("select * from \"Seance\" where date > current_date and id = ?");
-        stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where id = ?");
+                .prepareStatement("select * from \"Seance\" where \"date\" > current_date and \"id\" = ?");
+        stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where \"id\" = ?");
         stmtVerificationSeanceDecision = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where id = ? and decision is null");
+                .prepareStatement("select * from \"Proces\" where \"id\" = ? and decision is null");
         stmtExisteProcesSeances = cx.getConnection()
-                .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ? and date > current_date");
-        stmtTerminerProcesSeance = cx.getConnection()
-                .prepareStatement("delete from \"Seance\" where id = ?");
+                .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ? and \"date\" > current_date");
+        stmtTerminerProcesSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where \"id\" = ?");
     }
 
     /**
@@ -186,7 +173,7 @@ public class Devoir2
                 {
                     // Lecture des parametres
                     int idJuge = readInt(tokenizer);
-                    String prenomJuge = readString(tokenizer);                    
+                    String prenomJuge = readString(tokenizer);
                     String nomJuge = readString(tokenizer);
                     int ageJuge = readInt(tokenizer);
 
@@ -202,20 +189,20 @@ public class Devoir2
                 {
                     // Lecture des parametres
                     int idJuge = readInt(tokenizer);
-                    
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerRetirerJuge(idJuge);                    
+                    effectuerRetirerJuge(idJuge);
                 }
                 else if (command.equals("ajouterAvocat"))
                 {
                     // Lecture des parametres
-                    int idAvocat= readInt(tokenizer);
+                    int idAvocat = readInt(tokenizer);
                     String prenomAvocat = readString(tokenizer);
                     String nomAvocat = readString(tokenizer);
-                    int typeAvocat = readInt(tokenizer); 
-                    
+                    int typeAvocat = readInt(tokenizer);
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerAjouterAvocat(idAvocat, prenomAvocat, nomAvocat, typeAvocat);                    
+                    effectuerAjouterAvocat(idAvocat, prenomAvocat, nomAvocat, typeAvocat);
                 }
                 else if (command.equals("ajouterPartie"))
                 {
@@ -223,10 +210,10 @@ public class Devoir2
                     int idPartie = readInt(tokenizer);
                     String prenomPartie = readString(tokenizer);
                     String nomPartie = readString(tokenizer);
-                    int idAvocat = readInt(tokenizer); 
-                    
+                    int idAvocat = readInt(tokenizer);
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerAjouterPartie(idPartie, prenomPartie, nomPartie, idAvocat);                    
+                    effectuerAjouterPartie(idPartie, prenomPartie, nomPartie, idAvocat);
                 }
                 else if (command.equals("creerProces"))
                 {
@@ -235,17 +222,18 @@ public class Devoir2
                     int idJuge = readInt(tokenizer);
                     Date dateInitiale = readDate(tokenizer);
                     int devantJury = readInt(tokenizer);
-                    int idPartieDefenderesse = readInt(tokenizer); 
-                    int idPartiePoursuivante = readInt(tokenizer); 
-                    
+                    int idPartieDefenderesse = readInt(tokenizer);
+                    int idPartiePoursuivante = readInt(tokenizer);
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerCreerProces(idProces, idJuge, dateInitiale, devantJury, idPartieDefenderesse, idPartiePoursuivante);                    
+                    effectuerCreerProces(idProces, idJuge, dateInitiale, devantJury, idPartieDefenderesse,
+                            idPartiePoursuivante);
                 }
                 else if (command.equals("inscrireJury"))
                 {
                     // Lecture des parametres
                     int nasJury = readInt(tokenizer);
-                    String prenomJury = readString(tokenizer);                    
+                    String prenomJury = readString(tokenizer);
                     String nomJury = readString(tokenizer);
                     String sexeJury = readString(tokenizer);
                     int ageJury = readInt(tokenizer);
@@ -276,36 +264,36 @@ public class Devoir2
                 {
                     // Lecture des parametres
                     int idSeance = readInt(tokenizer);
-                    
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerSupprimerSeance(idSeance);                    
+                    effectuerSupprimerSeance(idSeance);
                 }
                 else if (command.equals("terminerProces"))
                 {
                     // Lecture des parametres
                     int idProces = readInt(tokenizer);
                     int decisionProces = readInt(tokenizer);
-                    
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerTerminerProces(idProces, decisionProces);                    
+                    effectuerTerminerProces(idProces, decisionProces);
                 }
                 else if (command.equals("afficherJuges"))
                 {
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerAfficherJuges();                  
+                    effectuerAfficherJuges();
                 }
                 else if (command.equals("afficherProces"))
                 {
                     // Lecture des parametres
                     int idProces = readInt(tokenizer);
-                    
+
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerAfficherProces(idProces);                  
+                    effectuerAfficherProces(idProces);
                 }
                 else if (command.equals("afficherJurys"))
                 {
                     // Appel de la methode qui traite la transaction specifique
-                    effectuerAfficherJurys();                  
+                    effectuerAfficherJurys();
                 }
                 else
                 {
@@ -327,17 +315,25 @@ public class Devoir2
      */
     private static void effectuerAfficherJurys() throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             ResultSet rsetJury = stmtSelectJurys.executeQuery();
             
-            if (rsetJury.next())
+            if (!rsetJury.next())
             {
                 rsetJury.close();
-                throw new IFT287Exception("Erreur dans l'affichage des jurys!");
+                throw new IFT287Exception("Aucun jury n'est disponible !");
             }
+            
+            System.out.println("\n\nListe des jurys : \n");
+            
+            do
+            {
+                System.out.println(rsetJury.getInt(1) + "\t" + rsetJury.getString(2) + "\t" + rsetJury.getString(3) + "\t" + rsetJury.getString(4) + "\t" + rsetJury.getInt(5));
+            } while(rsetJury.next());
+            
             rsetJury.close();
-                        
+                    
             // Commit
             cx.commit();
         }
@@ -350,28 +346,50 @@ public class Devoir2
 
     /**
      * Methode d'affichage des proces
+     * 
      * @param idProces
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerAfficherProces(int idProces) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             // Affichage du proces
             stmtSelectProces.setInt(1, idProces);
             ResultSet rsetProces = stmtSelectProces.executeQuery();
-            
-            if (rsetProces.next())
+
+            if (!rsetProces.next())
             {
                 rsetProces.close();
-                throw new IFT287Exception("Erreur avec l'affichage du proces: " + idProces);
+                throw new IFT287Exception("Le proces " + idProces + "n'existe pas");
             }
-            rsetProces.close();
             
+            System.out.println("\n\nAffichage du proces " + idProces + " :\n");
+            
+            System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getInt(2) + "\t" + rsetProces.getString(3) + "\t" + rsetProces.getInt(4) + "\t" + rsetProces.getInt(5) + "\t" + rsetProces.getInt(6));
+            
+            rsetProces.close();
+
             // Affichage des seance liees au proces
             stmtExisteProcesDansSeance.setInt(1, idProces);
-            stmtExisteProcesDansSeance.executeQuery();
+            rsetProces = stmtExisteProcesDansSeance.executeQuery();
             
+            if (!rsetProces.next())
+            {
+                rsetProces.close();
+                throw new IFT287Exception("Aucune seance n'est liee au proces " + idProces);
+            }
+            
+            System.out.println("Liste des seances liees au proces " + idProces + " :\n");
+            
+            do
+            {
+                System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getString(2) + "\t" + rsetProces.getInt(3));
+            } while(rsetProces.next());
+            
+            rsetProces.close();
+
             // Commit
             cx.commit();
         }
@@ -384,22 +402,24 @@ public class Devoir2
 
     /**
      * Methode d'affichage des juges
-     * @throws SQLException, IFT287Exception 
+     * 
+     * @throws SQLException,
+     *             IFT287Exception
      * 
      */
     private static void effectuerAfficherJuges() throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             ResultSet rsetJuges = stmtSelectJuges.executeQuery();
-            
+
             if (rsetJuges.next())
             {
                 rsetJuges.close();
                 throw new IFT287Exception("Erreur dans l'affichage des juges!");
             }
             rsetJuges.close();
-            
+
             // Commit
             cx.commit();
         }
@@ -412,45 +432,46 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerTerminerProces
+     * 
      * @param idProces
      * @param decisionProces
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerTerminerProces(int idProces, int decisionProces) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExisteProces.setInt(1, idProces);
             ResultSet rsetExisteProces = stmtExisteProces.executeQuery();
             ResultSet rsetExisteProcesSeances;
-            
+
             if (rsetExisteProces.next())
             {
                 rsetExisteProces.close();
                 throw new IFT287Exception("Erreur dans la terminaison du proces: " + idProces);
             }
             rsetExisteProces.close();
-            
+
             // Terminer le proces
             stmtTerminerProces.setInt(1, idProces);
             stmtTerminerProces.setInt(2, decisionProces);
-            
+
             stmtTerminerProces.executeQuery();
-            
-            // Suppression des séances 
+
+            // Suppression des séances
             rsetExisteProces = stmtTerminerProces.executeQuery();
-            
-            
-                // Rechercher les seances du proces
+
+            // Rechercher les seances du proces
             stmtExisteProcesSeances.setInt(1, idProces);
             rsetExisteProcesSeances = stmtExisteProcesSeances.executeQuery();
-            
-            while(rsetExisteProcesSeances.next())
+
+            while (rsetExisteProcesSeances.next())
             {
                 stmtTerminerProcesSeance.setInt(1, rsetExisteProcesSeances.getInt(1));
                 stmtTerminerProcesSeance.executeQuery();
             }
-    
+
             // Commit
             cx.commit();
         }
@@ -458,40 +479,40 @@ public class Devoir2
         {
             cx.rollback();
             throw e;
-        }        
+        }
     }
 
     /**
      * Methode de traitement pour effectuerSupprimerSeance
+     * 
      * @param idSeance
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerSupprimerSeance(int idSeance) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             int idProces;
             stmtVerificationSeanceDate.setInt(1, idSeance);
             ResultSet rsetSeanceDate = stmtVerificationSeanceDate.executeQuery();
             ResultSet rsetSeanceDecision;
-            
-            
+
             // Si la date est déjà passée ou non
             if (!rsetSeanceDate.next())
             {
                 rsetSeanceDate.close();
                 throw new IFT287Exception("La seance: " + idSeance + " est deja passe!");
-            }            
-            
-            rsetSeanceDate.close();
-            
+            }
+
             // Si le proces est en cours ou terminé
-            
             idProces = rsetSeanceDate.getInt(2);
             
+            rsetSeanceDate.close();
+
             stmtVerificationSeanceDecision.setInt(1, idProces);
             rsetSeanceDecision = stmtVerificationSeanceDecision.executeQuery();
-            
+
             if (rsetSeanceDecision.next())
             {
                 rsetSeanceDecision.close();
@@ -499,10 +520,11 @@ public class Devoir2
             }
 
             rsetSeanceDecision.close();
-            
+
             // Suppression de la seance
             stmtSupprimerSeance.setInt(1, idSeance);
-              
+            stmtSupprimerSeance.executeUpdate();
+            
             // Commit
             cx.commit();
         }
@@ -510,34 +532,38 @@ public class Devoir2
         {
             cx.rollback();
             throw e;
-        } 
+        }
     }
 
     /**
      * Methode de traitement pour effectuerAjouterSeance
+     * 
      * @param idSeance
      * @param idProces
      * @param dateSeance
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
-    private static void effectuerAjouterSeance(int idSeance, int idProces, Date dateSeance) throws SQLException, IFT287Exception
+    private static void effectuerAjouterSeance(int idSeance, int idProces, Date dateSeance)
+            throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExisteSeance.setInt(1, idSeance);
             ResultSet rsetSeance = stmtExisteSeance.executeQuery();
-            
+
             if (rsetSeance.next())
             {
                 rsetSeance.close();
                 throw new IFT287Exception("La seance existe deja: " + idSeance);
             }
             rsetSeance.close();
-            
+
             // Ajout de la seance
             stmtInsertSeance.setInt(1, idSeance);
-            stmtInsertSeance.setInt(2, idProces);
-            stmtInsertSeance.setDate(3, dateSeance);
+            stmtInsertSeance.setDate(2, dateSeance);
+            stmtInsertSeance.setInt(3, idProces);
+            stmtInsertSeance.executeUpdate();
             
             // Commit
             cx.commit();
@@ -551,47 +577,75 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerAssignerJury
+     * 
      * @param nasJury
      * @param idProces
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerAssignerJury(int nasJury, int idProces) throws SQLException, IFT287Exception
     {
-        // PRENDRE VERSION REMY
+        try
+        {
+            stmtExisteJuryDansProces.setInt(1, idProces);
+            ResultSet rsetJuryDansProces = stmtExisteJuryDansProces.executeQuery();
+
+            if (rsetJuryDansProces.next())
+            {
+                rsetJuryDansProces.close();
+                throw new IFT287Exception("Le jury " + nasJury + " existe deja dans le proces: " + idProces);
+            }
+            rsetJuryDansProces.close();
+
+            // Ajout du jury
+            stmtInsertJuryDansProces.setInt(1, idProces );
+            stmtInsertJuryDansProces.setInt(2, nasJury);
+            stmtInsertJuryDansProces.executeUpdate();
+
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
     }
 
     /**
      * Methode de traitement pour effectuerInscrireJury
+     * 
      * @param nasJury
      * @param prenomJury
      * @param nomJury
      * @param sexeJury
      * @param ageJury
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerInscrireJury(int nasJury, String prenomJury, String nomJury, String sexeJury,
             int ageJury) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExisteJury.setInt(1, nasJury);
             ResultSet rsetJury = stmtExisteJury.executeQuery();
-            
+
             if (rsetJury.next())
             {
                 rsetJury.close();
                 throw new IFT287Exception("Jury existe deja: " + nasJury);
             }
             rsetJury.close();
-            
+
             // Ajout du jury
             stmtInsertJury.setInt(1, nasJury);
             stmtInsertJury.setString(2, prenomJury);
-            stmtInsertJury.setString(3, nomJury);            
+            stmtInsertJury.setString(3, nomJury);
             stmtInsertJury.setString(4, sexeJury);
             stmtInsertJury.setInt(5, ageJury);
             stmtInsertJury.executeUpdate();
-            
+
             // Commit
             cx.commit();
         }
@@ -604,29 +658,31 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerCreerProces
+     * 
      * @param idProces
      * @param idJuge
      * @param dateInitiale
      * @param devantJury
      * @param idPartieDefenderesse
      * @param idPartiePoursuivante
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerCreerProces(int idProces, int idJuge, Date dateInitiale, int devantJury,
             int idPartieDefenderesse, int idPartiePoursuivante) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExisteProces.setInt(1, idProces);
             ResultSet rsetProces = stmtExisteProces.executeQuery();
-            
+
             if (rsetProces.next())
             {
                 rsetProces.close();
                 throw new IFT287Exception("Proces existe deja: " + idProces);
             }
             rsetProces.close();
-            
+
             // Ajout du proces
             stmtInsertProces.setInt(1, idProces);
             stmtInsertProces.setInt(2, idJuge);
@@ -635,7 +691,7 @@ public class Devoir2
             stmtInsertProces.setInt(5, idPartieDefenderesse);
             stmtInsertProces.setInt(6, idPartiePoursuivante);
             stmtInsertProces.executeUpdate();
-            
+
             // Commit
             cx.commit();
         }
@@ -648,33 +704,36 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerAjouterPartie
+     * 
      * @param idPartie
      * @param prenomPartie
      * @param nomPartie
      * @param idAvocat
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
-    private static void effectuerAjouterPartie(int idPartie, String prenomPartie, String nomPartie, int idAvocat) throws SQLException, IFT287Exception
+    private static void effectuerAjouterPartie(int idPartie, String prenomPartie, String nomPartie, int idAvocat)
+            throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExistePartie.setInt(1, idAvocat);
             ResultSet rsetPartie = stmtExistePartie.executeQuery();
-            
+
             if (rsetPartie.next())
             {
                 rsetPartie.close();
                 throw new IFT287Exception("Partie existe deja: " + idPartie);
             }
             rsetPartie.close();
-            
+
             // Ajout du partie
             stmtInsertPartie.setInt(1, idPartie);
             stmtInsertPartie.setString(2, prenomPartie);
             stmtInsertPartie.setString(3, nomPartie);
             stmtInsertPartie.setInt(4, idAvocat);
             stmtInsertPartie.executeUpdate();
-            
+
             // Commit
             cx.commit();
         }
@@ -687,33 +746,36 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerAjouterAvocat
+     * 
      * @param idAvocat
      * @param prenomAvocat
      * @param nomAvocat
      * @param typeAvocat
-     * @throws SQLException, IFT287Exception
+     * @throws SQLException,
+     *             IFT287Exception
      */
-    private static void effectuerAjouterAvocat(int idAvocat, String prenomAvocat, String nomAvocat, int typeAvocat) throws SQLException, IFT287Exception
+    private static void effectuerAjouterAvocat(int idAvocat, String prenomAvocat, String nomAvocat, int typeAvocat)
+            throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExisteAvocat.setInt(1, idAvocat);
             ResultSet rsetAvocat = stmtExisteAvocat.executeQuery();
-            
+
             if (rsetAvocat.next())
             {
                 rsetAvocat.close();
                 throw new IFT287Exception("Avocat existe deja: " + idAvocat);
             }
             rsetAvocat.close();
-            
+
             // Ajout de l'avocat
             stmtInsertAvocat.setInt(1, idAvocat);
             stmtInsertAvocat.setString(2, prenomAvocat);
             stmtInsertAvocat.setString(3, nomAvocat);
             stmtInsertAvocat.setInt(4, typeAvocat);
             stmtInsertAvocat.executeUpdate();
-            
+
             // Commit
             cx.commit();
         }
@@ -726,39 +788,29 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerRetirerJuge
+     * 
      * @param idJuge
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
     private static void effectuerRetirerJuge(int idJuge) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtJugeDisponible.setInt(1, idJuge);
             ResultSet rsetJugeDisponible = stmtJugeDisponible.executeQuery();
-            
-            if (rsetJugeDisponible.next())
+
+            if (!rsetJugeDisponible.next())
             {
                 rsetJugeDisponible.close();
                 throw new IFT287Exception("Juge non disponible: " + idJuge);
             }
-            
             rsetJugeDisponible.close();
-            
-            stmtJugeVerification.setInt(1, idJuge);
-            
-            ResultSet rsetJugeVerification = stmtJugeVerification.executeQuery();
-            
-            if (!(rsetJugeVerification.next()))
-            {
-                rsetJugeVerification.close();
-                throw new IFT287Exception("Juge inexistant: " + idJuge);
-            }
-            rsetJugeVerification.close();
-            
+
             // Ajout de l'avocat
-            stmtJugeRetirer.setInt(1,idJuge);
+            stmtJugeRetirer.setInt(1, idJuge);
             stmtJugeRetirer.executeUpdate();
-            
+
             // Commit
             cx.commit();
         }
@@ -771,33 +823,36 @@ public class Devoir2
 
     /**
      * Methode de traitement pour effectuerAjouterJuge
+     * 
      * @param idJuge
-     * @param prenomJuge 
+     * @param prenomJuge
      * @param nomJuge
      * @param ageJuge
-     * @throws SQLException, IFT287Exception 
+     * @throws SQLException,
+     *             IFT287Exception
      */
-    private static void effectuerAjouterJuge(int idJuge, String prenomJuge, String nomJuge, int ageJuge) throws SQLException, IFT287Exception
+    private static void effectuerAjouterJuge(int idJuge, String prenomJuge, String nomJuge, int ageJuge)
+            throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             stmtExisteJuge.setInt(1, idJuge);
             ResultSet rsetJuge = stmtExisteJuge.executeQuery();
-            
+
             if (rsetJuge.next())
             {
                 rsetJuge.close();
                 throw new IFT287Exception("Juge existe deja: " + idJuge);
             }
             rsetJuge.close();
-            
+
             // Ajout du juge
             stmtInsertJuge.setInt(1, idJuge);
-            stmtInsertJuge.setString(2, prenomJuge);            
+            stmtInsertJuge.setString(2, prenomJuge);
             stmtInsertJuge.setString(3, nomJuge);
             stmtInsertJuge.setInt(4, ageJuge);
             stmtInsertJuge.executeUpdate();
-            
+
             // Commit
             cx.commit();
         }
@@ -814,9 +869,10 @@ public class Devoir2
 
     /**
      * Ouvre le fichier de transaction, ou lit à partir de System.in
-     * @param args 
+     * 
+     * @param args
      * @return BufferedReader
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
     public static BufferedReader ouvrirFichier(String[] args) throws FileNotFoundException
     {
