@@ -62,6 +62,7 @@ public class Devoir2
     private static PreparedStatement stmtSelectJurys;
     private static PreparedStatement stmtTerminerProces;
     private static PreparedStatement stmtJugeDisponible;
+    private static PreparedStatement stmtJugeVerification;
     private static PreparedStatement stmtJugeRetirer;
     private static PreparedStatement stmtVerificationSeanceDate;    
     private static PreparedStatement stmtVerificationSeanceDecision;
@@ -130,11 +131,11 @@ public class Devoir2
         stmtExisteJury = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where nas = ?");
         stmtInsertJury = cx.getConnection().prepareStatement(
-                "insert into \"Jury\" (nas, prenom, nom, sexe, age, \"Proces_id\") " + "values (?,?,?,?,?,?)");
+                "insert into \"Jury\" (nas, prenom, nom, sexe, age, \"Proces_id\") " + "values (?,?,?,?,?,null)");
         stmtExisteJuryDansProces = cx.getConnection()
                 .prepareStatement("select * from \"Jury\" where \"Proces_id\" = ?");
         stmtInsertJuryDansProces = cx.getConnection().prepareStatement(
-                "update \"Jury\" set (\"Proces_id\") = ? where nas = ?");
+                "update \"Jury\" set \"Proces_id\" = ? where \"nas\" = ?");
         stmtExisteSeance = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where id = ?");
         stmtInsertSeance = cx.getConnection().prepareStatement(
@@ -149,8 +150,10 @@ public class Devoir2
                 .prepareStatement("update \"Proces\" set (decision) " + "values (?) where date < current_date");
         stmtJugeDisponible = cx.getConnection()
                 .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ?");
+        stmtJugeVerification = cx.getConnection()
+                .prepareStatement("select * from \"Juge\" where \"id\" = ?");
         stmtJugeRetirer = cx.getConnection()
-                .prepareStatement("delete from \"Juge\" where \"Juge_id\" = ?");
+                .prepareStatement("delete from \"Juge\" where \"id\" = ?");
         stmtVerificationSeanceDate = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where date > current_date and id = ?");
         stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where id = ?");
@@ -554,30 +557,7 @@ public class Devoir2
      */
     private static void effectuerAssignerJury(int nasJury, int idProces) throws SQLException, IFT287Exception
     {
-        try 
-        {
-            stmtExisteJuryDansProces.setInt(1, nasJury);
-            ResultSet rsetJuryDansProces = stmtExisteJuryDansProces.executeQuery();
-            
-            if (rsetJuryDansProces.next())
-            {
-                rsetJuryDansProces.close();
-                throw new IFT287Exception("Le jury " + nasJury + " existe deja dans le proces: " + idProces);
-            }
-            rsetJuryDansProces.close();
-            
-            // Ajout du jury
-            stmtInsertJuryDansProces.setInt(1, idProces);
-            stmtInsertJuryDansProces.setInt(2, nasJury);
-            
-            // Commit
-            cx.commit();
-        }
-        catch (Exception e)
-        {
-            cx.rollback();
-            throw e;
-        }
+        // PRENDRE VERSION REMY
     }
 
     /**
@@ -607,8 +587,10 @@ public class Devoir2
             // Ajout du jury
             stmtInsertJury.setInt(1, nasJury);
             stmtInsertJury.setString(2, prenomJury);
-            stmtInsertJury.setString(3, nomJury);
+            stmtInsertJury.setString(3, nomJury);            
             stmtInsertJury.setString(4, sexeJury);
+            stmtInsertJury.setInt(5, ageJury);
+            stmtInsertJury.executeUpdate();
             
             // Commit
             cx.commit();
@@ -754,12 +736,24 @@ public class Devoir2
             stmtJugeDisponible.setInt(1, idJuge);
             ResultSet rsetJugeDisponible = stmtJugeDisponible.executeQuery();
             
-            if (!rsetJugeDisponible.next())
+            if (rsetJugeDisponible.next())
             {
                 rsetJugeDisponible.close();
                 throw new IFT287Exception("Juge non disponible: " + idJuge);
             }
+            
             rsetJugeDisponible.close();
+            
+            stmtJugeVerification.setInt(1, idJuge);
+            
+            ResultSet rsetJugeVerification = stmtJugeVerification.executeQuery();
+            
+            if (!(rsetJugeVerification.next()))
+            {
+                rsetJugeVerification.close();
+                throw new IFT287Exception("Juge inexistant: " + idJuge);
+            }
+            rsetJugeVerification.close();
             
             // Ajout de l'avocat
             stmtJugeRetirer.setInt(1,idJuge);
