@@ -327,17 +327,25 @@ public class Devoir2
      */
     private static void effectuerAfficherJurys() throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             ResultSet rsetJury = stmtSelectJurys.executeQuery();
             
-            if (rsetJury.next())
+            if (!rsetJury.next())
             {
                 rsetJury.close();
-                throw new IFT287Exception("Erreur dans l'affichage des jurys!");
+                throw new IFT287Exception("Aucun jury n'est disponible !");
             }
+            
+            System.out.println("\n\nListe des jurys : \n");
+            
+            do
+            {
+                System.out.println(rsetJury.getInt(1) + "\t" + rsetJury.getString(2) + "\t" + rsetJury.getString(3) + "\t" + rsetJury.getString(4) + "\t" + rsetJury.getInt(5));
+            } while(rsetJury.next());
+            
             rsetJury.close();
-                        
+                    
             // Commit
             cx.commit();
         }
@@ -355,23 +363,43 @@ public class Devoir2
      */
     private static void effectuerAfficherProces(int idProces) throws SQLException, IFT287Exception
     {
-        try 
+        try
         {
             // Affichage du proces
             stmtSelectProces.setInt(1, idProces);
             ResultSet rsetProces = stmtSelectProces.executeQuery();
-            
-            if (rsetProces.next())
+
+            if (!rsetProces.next())
             {
                 rsetProces.close();
-                throw new IFT287Exception("Erreur avec l'affichage du proces: " + idProces);
+                throw new IFT287Exception("Le proces " + idProces + "n'existe pas");
             }
-            rsetProces.close();
             
+            System.out.println("\n\nAffichage du proces " + idProces + " :\n");
+            
+            System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getInt(2) + "\t" + rsetProces.getString(3) + "\t" + rsetProces.getInt(4) + "\t" + rsetProces.getInt(5) + "\t" + rsetProces.getInt(6));
+            
+            rsetProces.close();
+
             // Affichage des seance liees au proces
             stmtExisteProcesDansSeance.setInt(1, idProces);
-            stmtExisteProcesDansSeance.executeQuery();
+            rsetProces = stmtExisteProcesDansSeance.executeQuery();
             
+            if (!rsetProces.next())
+            {
+                rsetProces.close();
+                throw new IFT287Exception("Aucune seance n'est liee au proces " + idProces);
+            }
+            
+            System.out.println("Liste des seances liees au proces " + idProces + " :\n");
+            
+            do
+            {
+                System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getString(2) + "\t" + rsetProces.getInt(3));
+            } while(rsetProces.next());
+            
+            rsetProces.close();
+
             // Commit
             cx.commit();
         }
