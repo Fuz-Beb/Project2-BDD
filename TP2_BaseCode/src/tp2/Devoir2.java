@@ -340,7 +340,7 @@ public class Devoir2
                 throw new IFT287Exception("Aucun jury n'est disponible !");
             }
             
-            System.out.println("\n\nListe des jurys : \n");
+            System.out.println("\n\nListe des jurys : ");
             
             do
             {
@@ -378,7 +378,7 @@ public class Devoir2
                 throw new IFT287Exception("Le proces " + idProces + "n'existe pas");
             }
             
-            System.out.println("\n\nAffichage du proces " + idProces + " :\n");
+            System.out.println("\n\nAffichage du proces " + idProces + " :");
             
             System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getInt(2) + "\t" + rsetProces.getString(3) + "\t" + rsetProces.getInt(4) + "\t" + rsetProces.getInt(5) + "\t" + rsetProces.getInt(6));
             
@@ -394,7 +394,7 @@ public class Devoir2
                 throw new IFT287Exception("Aucune seance n'est liee au proces " + idProces);
             }
             
-            System.out.println("Liste des seances liees au proces " + idProces + " :\n");
+            System.out.println("\nListe des seances liees au proces " + idProces + " :");
             
             do
             {
@@ -553,7 +553,7 @@ public class Devoir2
         {
             cx.rollback();
             throw e;
-        } 
+        }
     }
 
     /**
@@ -625,7 +625,8 @@ public class Devoir2
         {
             cx.rollback();
             throw e;
-        }    }
+        }
+    }
 
     /**
      * Methode de traitement pour effectuerInscrireJury
