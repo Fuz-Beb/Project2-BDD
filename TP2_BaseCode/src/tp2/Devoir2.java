@@ -64,6 +64,7 @@ public class Devoir2
     private static PreparedStatement stmtJugeDisponible;
     private static PreparedStatement stmtJugeVerification;
     private static PreparedStatement stmtJugeRetirer;
+    private static PreparedStatement stmtVerificationSeanceExiste;   
     private static PreparedStatement stmtVerificationSeanceDate;    
     private static PreparedStatement stmtVerificationSeanceDecision;
     private static PreparedStatement stmtSupprimerSeance;
@@ -154,6 +155,8 @@ public class Devoir2
                 .prepareStatement("select * from \"Juge\" where \"id\" = ?");
         stmtJugeRetirer = cx.getConnection()
                 .prepareStatement("delete from \"Juge\" where \"id\" = ?");
+        stmtVerificationSeanceExiste = cx.getConnection()
+                .prepareStatement("select * from \"Seance\" where id = ?");
         stmtVerificationSeanceDate = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where date > current_date and id = ?");
         stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where id = ?");
@@ -499,10 +502,23 @@ public class Devoir2
         try 
         {
             int idProces;
+            
+            stmtVerificationSeanceExiste.setInt(1, idSeance);
             stmtVerificationSeanceDate.setInt(1, idSeance);
-            ResultSet rsetSeanceDate = stmtVerificationSeanceDate.executeQuery();
+            ResultSet rsetSeanceExiste = stmtVerificationSeanceExiste.executeQuery();
+            ResultSet rsetSeanceDate;
             ResultSet rsetSeanceDecision;
             
+            // Si la seance existe
+            if (!rsetSeanceExiste.next())
+            {
+                rsetSeanceExiste.close();
+                throw new IFT287Exception("La seance: " + idSeance + " n'existe pas!");
+            }
+            
+            rsetSeanceExiste.close();
+            
+            rsetSeanceDate = stmtVerificationSeanceDate.executeQuery();
             
             // Si la date est déjà passée ou non
             if (!rsetSeanceDate.next())
@@ -510,12 +526,11 @@ public class Devoir2
                 rsetSeanceDate.close();
                 throw new IFT287Exception("La seance: " + idSeance + " est deja passe!");
             }            
+                        
+            // Si le proces est en cours ou terminé            
+            idProces = rsetSeanceDate.getInt(1);
             
             rsetSeanceDate.close();
-            
-            // Si le proces est en cours ou terminé
-            
-            idProces = rsetSeanceDate.getInt(2);
             
             stmtVerificationSeanceDecision.setInt(1, idProces);
             rsetSeanceDecision = stmtVerificationSeanceDecision.executeQuery();
@@ -564,8 +579,9 @@ public class Devoir2
             
             // Ajout de la seance
             stmtInsertSeance.setInt(1, idSeance);
-            stmtInsertSeance.setInt(2, idProces);
-            stmtInsertSeance.setDate(3, dateSeance);
+            stmtInsertSeance.setDate(2, dateSeance);
+            stmtInsertSeance.setInt(3, idProces);            
+            stmtInsertSeance.executeUpdate();
             
             // Commit
             cx.commit();
@@ -585,8 +601,31 @@ public class Devoir2
      */
     private static void effectuerAssignerJury(int nasJury, int idProces) throws SQLException, IFT287Exception
     {
-        // PRENDRE VERSION REMY
-    }
+        try
+        {
+            stmtExisteJuryDansProces.setInt(1, idProces);
+            ResultSet rsetJuryDansProces = stmtExisteJuryDansProces.executeQuery();
+
+            if (rsetJuryDansProces.next())
+            {
+                rsetJuryDansProces.close();
+                throw new IFT287Exception("Le jury " + nasJury + " existe deja dans le proces: " + idProces);
+            }
+            rsetJuryDansProces.close();
+
+            // Ajout du jury
+            stmtInsertJuryDansProces.setInt(1, idProces );
+            stmtInsertJuryDansProces.setInt(2, nasJury);
+            stmtInsertJuryDansProces.executeUpdate();
+
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }    }
 
     /**
      * Methode de traitement pour effectuerInscrireJury
