@@ -101,10 +101,10 @@ CREATE TABLE  "Jury" (
   "nas" INT UNIQUE,
   "prenom" VARCHAR(45) NULL,
   "nom" VARCHAR(45) NULL,
-  "sexe" VARCHAR(1) NOT NULL,
+  "sexe" INT NOT NULL,
   "age" INT NOT NULL,
-  "Proces_id" INT,
-  PRIMARY KEY ("nas"),
+  "Proces_id" INT NOT NULL,
+  PRIMARY KEY ("nas", "Proces_id"),
   CONSTRAINT "fk_Personne_Proces1"
     FOREIGN KEY ("Proces_id")
     REFERENCES "Proces" ("id")
