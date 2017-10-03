@@ -337,7 +337,7 @@ public class Devoir2
                 throw new IFT287Exception("Aucun jury n'est disponible !");
             }
             
-            System.out.println("\n\nListe des jurys : \n");
+            System.out.println("\n\nListe des jurys : ");
             
             do
             {
@@ -375,7 +375,7 @@ public class Devoir2
                 throw new IFT287Exception("Le proces " + idProces + "n'existe pas");
             }
             
-            System.out.println("\n\nAffichage du proces " + idProces + " :\n");
+            System.out.println("\n\nAffichage du proces " + idProces + " :");
             
             System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getInt(2) + "\t" + rsetProces.getString(3) + "\t" + rsetProces.getInt(4) + "\t" + rsetProces.getInt(5) + "\t" + rsetProces.getInt(6));
             
@@ -391,7 +391,7 @@ public class Devoir2
                 throw new IFT287Exception("Aucune seance n'est liee au proces " + idProces);
             }
             
-            System.out.println("Liste des seances liees au proces " + idProces + " :\n");
+            System.out.println("\nListe des seances liees au proces " + idProces + " :");
             
             do
             {
@@ -538,7 +538,7 @@ public class Devoir2
         {
             cx.rollback();
             throw e;
-        } 
+        }
     }
 
     /**
@@ -564,8 +564,9 @@ public class Devoir2
             
             // Ajout de la seance
             stmtInsertSeance.setInt(1, idSeance);
-            stmtInsertSeance.setInt(2, idProces);
-            stmtInsertSeance.setDate(3, dateSeance);
+            stmtInsertSeance.setDate(2, dateSeance);
+            stmtInsertSeance.setInt(3, idProces);
+            
             
             // Commit
             cx.commit();
@@ -585,7 +586,31 @@ public class Devoir2
      */
     private static void effectuerAssignerJury(int nasJury, int idProces) throws SQLException, IFT287Exception
     {
-        // PRENDRE VERSION REMY
+        try
+        {
+            stmtExisteJuryDansProces.setInt(1, idProces);
+            ResultSet rsetJuryDansProces = stmtExisteJuryDansProces.executeQuery();
+
+            if (rsetJuryDansProces.next())
+            {
+                rsetJuryDansProces.close();
+                throw new IFT287Exception("Le jury " + nasJury + " existe deja dans le proces: " + idProces);
+            }
+            rsetJuryDansProces.close();
+
+            // Ajout du jury
+            stmtInsertJuryDansProces.setInt(1, idProces );
+            stmtInsertJuryDansProces.setInt(2, nasJury);
+            stmtInsertJuryDansProces.executeUpdate();
+
+            // Commit
+            cx.commit();
+        }
+        catch (Exception e)
+        {
+            cx.rollback();
+            throw e;
+        }
     }
 
     /**
