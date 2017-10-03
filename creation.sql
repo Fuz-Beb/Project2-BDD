@@ -3,9 +3,6 @@
 -- Model: New Model    Version: 1.0
 -- MySQL Workbench Forward Engineering
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
 -- Schema postgres
@@ -14,133 +11,102 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schema postgres
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `postgres` DEFAULT CHARACTER SET utf8 ;
-USE `postgres` ;
 
 -- -----------------------------------------------------
--- Table `postgres`.`Juge`
+-- Table "Juge"
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `postgres`.`Juge` ;
-
-CREATE TABLE IF NOT EXISTS `postgres`.`Juge` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `prenom` VARCHAR(45) NOT NULL,
-  `nom` VARCHAR(45) NOT NULL,
-  `age` INT NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
+CREATE TABLE  "Juge" (
+  "id" INT UNIQUE,
+  "prenom" VARCHAR(45) NOT NULL,
+  "nom" VARCHAR(45) NOT NULL,
+  "age" INT NOT NULL,
+  PRIMARY KEY ("id"));
 
 
 -- -----------------------------------------------------
--- Table `postgres`.`Avocat`
+-- Table "Avocat"
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `postgres`.`Avocat` ;
-
-CREATE TABLE IF NOT EXISTS `postgres`.`Avocat` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `prenom` VARCHAR(45) NOT NULL,
-  `nom` VARCHAR(45) NOT NULL,
-  `type` TINYINT NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
+CREATE TABLE  "Avocat" (
+  "id" INT UNIQUE,
+  "prenom" VARCHAR(45) NOT NULL,
+  "nom" VARCHAR(45) NOT NULL,
+  "type" INT NOT NULL,
+  PRIMARY KEY ("id"));
 
 
 -- -----------------------------------------------------
--- Table `postgres`.`Partie`
+-- Table "Partie"
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `postgres`.`Partie` ;
-
-CREATE TABLE IF NOT EXISTS `postgres`.`Partie` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `prenom` VARCHAR(45) NULL,
-  `nom` VARCHAR(45) NULL,
-  `Avocat_id` INT NOT NULL,
-  PRIMARY KEY (`id`, `Avocat_id`),
-  INDEX `fk_Partie_Avocat_idx` (`Avocat_id` ASC),
-  CONSTRAINT `fk_Partie_Avocat`
-    FOREIGN KEY (`Avocat_id`)
-    REFERENCES `postgres`.`Avocat` (`id`)
+CREATE TABLE  "Partie" (
+  "id" INT UNIQUE,
+  "prenom" VARCHAR(45) NULL,
+  "nom" VARCHAR(45) NULL,
+  "Avocat_id" INT NOT NULL,
+  PRIMARY KEY ("id", "Avocat_id"),
+  CONSTRAINT "fk_Partie_Avocat"
+    FOREIGN KEY ("Avocat_id")
+    REFERENCES "Avocat" ("id")
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    ON UPDATE NO ACTION);
 
 
 -- -----------------------------------------------------
--- Table `postgres`.`Proces`
+-- Table "Proces"
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `postgres`.`Proces` ;
-
-CREATE TABLE IF NOT EXISTS `postgres`.`Proces` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `date` DATETIME NOT NULL,
-  `devantJury` TINYINT NOT NULL,
-  `Juge_id` INT NOT NULL,
-  `PartieDefenderesse_id` INT NOT NULL,
-  `PartiePoursuivant_id` INT NOT NULL,
-  `decision` TINYINT NULL,
-  PRIMARY KEY (`id`, `Juge_id`, `PartieDefenderesse_id`, `PartiePoursuivant_id`),
-  INDEX `fk_Procès_Juge1_idx` (`Juge_id` ASC),
-  INDEX `fk_Procès_Partie defenderesse1_idx` (`PartieDefenderesse_id` ASC),
-  INDEX `fk_Procès_Partie1_idx` (`PartiePoursuivant_id` ASC),
-  CONSTRAINT `fk_Procès_Juge1`
-    FOREIGN KEY (`Juge_id`)
-    REFERENCES `postgres`.`Juge` (`id`)
+CREATE TABLE  "Proces" (
+  "id" INT UNIQUE,
+  "Juge_id" INT NOT NULL,
+  "date" TIMESTAMP NOT NULL,
+  "devantJury" INT NOT NULL,
+  "PartieDefenderesse_id" INT NOT NULL,
+  "PartiePoursuivant_id" INT NOT NULL,
+  "decision" INT NULL,
+  PRIMARY KEY ("id", "Juge_id", "PartieDefenderesse_id", "PartiePoursuivant_id"),
+  CONSTRAINT "fk_Procès_Juge1"
+    FOREIGN KEY ("Juge_id")
+    REFERENCES "Juge" ("id")
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Procès_Partie defenderesse1`
-    FOREIGN KEY (`PartieDefenderesse_id`)
-    REFERENCES `postgres`.`Partie` (`id`)
+  CONSTRAINT "fk_Procès_Partie defenderesse1"
+    FOREIGN KEY ("PartieDefenderesse_id")
+    REFERENCES "Partie" ("id")
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Procès_Partie1`
-    FOREIGN KEY (`PartiePoursuivant_id`)
-    REFERENCES `postgres`.`Partie` (`id`)
+  CONSTRAINT "fk_Procès_Partie1"
+    FOREIGN KEY ("PartiePoursuivant_id")
+    REFERENCES "Partie" ("id")
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    ON UPDATE NO ACTION);
 
 
 -- -----------------------------------------------------
--- Table `postgres`.`Seance`
+-- Table "Seance"
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `postgres`.`Seance` ;
-
-CREATE TABLE IF NOT EXISTS `postgres`.`Seance` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `date` DATETIME NOT NULL,
-  `Proces_id` INT NOT NULL,
-  PRIMARY KEY (`id`, `Proces_id`),
-  INDEX `fk_Seance_Procès1_idx` (`Proces_id` ASC),
-  CONSTRAINT `fk_Seance_Procès1`
-    FOREIGN KEY (`Proces_id`)
-    REFERENCES `postgres`.`Proces` (`id`)
+CREATE TABLE  "Seance" (
+  "id" INT UNIQUE,
+  "date" TIMESTAMP NOT NULL,
+  "Proces_id" INT NOT NULL,
+  PRIMARY KEY ("id", "Proces_id"),
+  CONSTRAINT "fk_Seance_Procès1"
+    FOREIGN KEY ("Proces_id")
+    REFERENCES "Proces" ("id")
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    ON UPDATE NO ACTION);
 
 
 -- -----------------------------------------------------
--- Table `postgres`.`Jury`
+-- Table "Jury"
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `postgres`.`Jury` ;
-
-CREATE TABLE IF NOT EXISTS `postgres`.`Jury` (
-  `nas` INT NOT NULL AUTO_INCREMENT,
-  `prenom` VARCHAR(45) NULL,
-  `nom` VARCHAR(45) NULL,
-  `sexe` TINYINT NOT NULL,
-  `age` INT NOT NULL,
-  `Proces_id` INT NOT NULL,
-  PRIMARY KEY (`nas`, `Proces_id`),
-  INDEX `fk_Personne_Proces1_idx` (`Proces_id` ASC),
-  CONSTRAINT `fk_Personne_Proces1`
-    FOREIGN KEY (`Proces_id`)
-    REFERENCES `postgres`.`Proces` (`id`)
+CREATE TABLE  "Jury" (
+  "nas" INT UNIQUE,
+  "prenom" VARCHAR(45) NULL,
+  "nom" VARCHAR(45) NULL,
+  "sexe" VARCHAR(1) NOT NULL,
+  "age" INT NOT NULL,
+  "Proces_id" INT,
+  PRIMARY KEY ("nas"),
+  CONSTRAINT "fk_Personne_Proces1"
+    FOREIGN KEY ("Proces_id")
+    REFERENCES "Proces" ("id")
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+    ON UPDATE NO ACTION);
