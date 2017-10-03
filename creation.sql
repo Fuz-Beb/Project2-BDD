@@ -20,6 +20,7 @@ CREATE TABLE  "Juge" (
   "prenom" VARCHAR(45) NOT NULL,
   "nom" VARCHAR(45) NOT NULL,
   "age" INT NOT NULL,
+  "statutActif" BOOLEAN NOT NULL DEFAULT true,
   PRIMARY KEY ("id"));
 
 
