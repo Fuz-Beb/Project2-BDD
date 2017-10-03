@@ -1,28 +1,19 @@
--- Suppression de l'ensemble des tables de la base de donnée centresportif --
+-- Suppression de l'ensemble des tables de la base de donnée --
 
--- Suppression de la table participant_has_equipe
-DROP TABLE IF EXISTS `CentreSportif`.`participant_has_equipe`;
+-- Suppression de la table Avocat
+DROP TABLE IF EXISTS "Avocat" cascade;
 
--- Suppression de la table equipe_has_ligue
-DROP TABLE IF EXISTS `CentreSportif`.`equipe_has_ligue`;
+-- Suppression de la table Juge
+DROP TABLE IF EXISTS "Juge" cascade;
 
--- Suppression de la table competition_has_equipe
-DROP TABLE IF EXISTS `CentreSportif`.`competition_has_equipe`;
+-- Suppression de la table Jury
+DROP TABLE IF EXISTS "Jury" cascade;
 
--- Suppression de la table equipe
-DROP TABLE IF EXISTS `CentreSportif`.`equipe`;
+-- Suppression de la table Partie
+DROP TABLE IF EXISTS "Partie" cascade;
 
--- Suppression de la table competition
-DROP TABLE IF EXISTS `CentreSportif`.`competition`;
+-- Suppression de la table Proces
+DROP TABLE IF EXISTS "Proces" cascade;
 
--- Suppression de la table ligue
-DROP TABLE IF EXISTS `CentreSportif`.`ligue`;
-
--- Suppression de la table activite
-DROP TABLE IF EXISTS `CentreSportif`.`activite`;
-
--- Suppression de la table participant
-DROP TABLE IF EXISTS `CentreSportif`.`participant`;
-
--- Suppression de la base de donnée vide --
-DROP DATABASE `centresportif`
+-- Suppression de la table Seance
+DROP TABLE IF EXISTS "Seance" cascade;
