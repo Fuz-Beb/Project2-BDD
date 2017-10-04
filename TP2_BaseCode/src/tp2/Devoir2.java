@@ -66,7 +66,6 @@ public class Devoir2
     private static PreparedStatement stmtJugeRetirer;
     private static PreparedStatement stmtVerificationSeanceExiste;   
     private static PreparedStatement stmtVerificationSeanceDate;    
-    private static PreparedStatement stmtVerificationSeanceDecision;
     private static PreparedStatement stmtSupprimerSeance;
     private static PreparedStatement stmtExisteProcesSeances;
     private static PreparedStatement stmtTerminerProcesSeance;
@@ -116,7 +115,7 @@ public class Devoir2
         stmtExisteJuge = cx.getConnection()
                 .prepareStatement("select * from \"Juge\" where id = ?");
         stmtInsertJuge = cx.getConnection().prepareStatement(
-                "insert into \"Juge\" (id, prenom, nom, age) " + "values (?,?,?,?)");        
+                "insert into \"Juge\" (id, prenom, nom, age, statutActif) " + "values (?,?,?,?,true)");        
         stmtExisteAvocat = cx.getConnection()
                 .prepareStatement("select * from \"Avocat\" where id = ?");
         stmtInsertAvocat = cx.getConnection().prepareStatement(
@@ -150,17 +149,17 @@ public class Devoir2
         stmtTerminerProces = cx.getConnection()
                 .prepareStatement("update \"Proces\" set (decision) " + "values (?) where date < current_date");
         stmtJugeDisponible = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ?");
+                .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ? and \"statutActif\" = true");
         stmtJugeVerification = cx.getConnection()
                 .prepareStatement("select * from \"Juge\" where \"id\" = ?");
         stmtJugeRetirer = cx.getConnection()
-                .prepareStatement("delete from \"Juge\" where \"id\" = ?");
+                .prepareStatement("update \\\"Juge\\\" set (statutActif) \" + \"values (false) where id = ?");
         stmtVerificationSeanceExiste = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where id = ?");
         stmtVerificationSeanceDate = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where date > current_date and id = ?");
         stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where id = ?");
-        stmtVerificationSeanceDecision = cx.getConnection()
+        cx.getConnection()
                 .prepareStatement("select * from \"Proces\" where id = ? and decision is null");
         stmtExisteProcesSeances = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ? and date > current_date");
@@ -501,14 +500,10 @@ public class Devoir2
     {
         try 
         {
-            int idProces;
-            
             stmtVerificationSeanceExiste.setInt(1, idSeance);
             stmtVerificationSeanceDate.setInt(1, idSeance);
             ResultSet rsetSeanceExiste = stmtVerificationSeanceExiste.executeQuery();
             ResultSet rsetSeanceDate;
-            ResultSet rsetSeanceDecision;
-            
             // Si la seance existe
             if (!rsetSeanceExiste.next())
             {
@@ -527,24 +522,11 @@ public class Devoir2
                 throw new IFT287Exception("La seance: " + idSeance + " est deja passe!");
             }            
                         
-            // Si le proces est en cours ou terminé            
-            idProces = rsetSeanceDate.getInt(1);
-            
-            rsetSeanceDate.close();
-            
-            stmtVerificationSeanceDecision.setInt(1, idProces);
-            rsetSeanceDecision = stmtVerificationSeanceDecision.executeQuery();
-            
-            if (rsetSeanceDecision.next())
-            {
-                rsetSeanceDecision.close();
-                throw new IFT287Exception("Le proces: " + idProces + " n est pas termine!");
-            }
-
-            rsetSeanceDecision.close();
+            rsetSeanceDate.close();            
             
             // Suppression de la seance
             stmtSupprimerSeance.setInt(1, idSeance);
+            stmtSupprimerSeance.executeUpdate();
               
             // Commit
             cx.commit();
@@ -807,7 +789,7 @@ public class Devoir2
             if (rsetJugeDisponible.next())
             {
                 rsetJugeDisponible.close();
-                throw new IFT287Exception("Juge non disponible: " + idJuge);
+                throw new IFT287Exception("Juge non disponible et/ou déjà inactif: " + idJuge);
             }
             
             rsetJugeDisponible.close();
