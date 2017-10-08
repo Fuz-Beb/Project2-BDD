@@ -43,6 +43,7 @@ public class Devoir2
     private static Connexion cx;
 
     private static PreparedStatement stmtSelectProcesNonTermine;
+    private static PreparedStatement stmtSeanceNonTerminee;
     private static PreparedStatement stmtExisteProcesDansSeance;
     private static PreparedStatement stmtExisteJuge;
     private static PreparedStatement stmtInsertJuge;
@@ -110,9 +111,12 @@ public class Devoir2
      */
     private static void initialiseStatements() throws SQLException
     {
-        stmtVerificationSeanceDecision = cx.getConnection().prepareStatement("select * from \"Proces\" where \"id\" = ? and \"decision\" is null");
+        stmtVerificationSeanceDecision = cx.getConnection()
+                .prepareStatement("select * from \"Proces\" where \"id\" = ? and \"decision\" is null");
         stmtSelectProcesNonTermine = cx.getConnection()
-                .prepareStatement("select * from \"Proces\" where \"id\" = ? and date < current_date");
+                .prepareStatement("select * from \"Proces\" where \"id\" = ? and \"date\" < current_date");
+        stmtSeanceNonTerminee = cx.getConnection()
+                .prepareStatement("select * from \"Seance\" where \"id\" = ? and \"date\" < current_date");
         stmtExisteProcesDansSeance = cx.getConnection()
                 .prepareStatement("select * from \"Seance\" where \"Proces_id\" = ?");
         stmtExisteJuge = cx.getConnection().prepareStatement("select * from \"Juge\" where id = ?");
@@ -533,14 +537,14 @@ public class Devoir2
 
             rsetSeanceExiste.close();
 
-            rsetSeanceDate = stmtExisteSeance.executeQuery();
+            stmtSeanceNonTerminee.setInt(1, idSeance);
+            rsetSeanceDate = stmtSeanceNonTerminee.executeQuery();
 
             // Si la date est déjà passée ou non
-            if (!rsetSeanceDate.next())
+            if (rsetSeanceDate.next())
             {
                 rsetSeanceDate.close();
                 throw new IFT287Exception("La seance: " + idSeance + " est deja passe!");
-
             }
 
             rsetSeanceDate.close();
