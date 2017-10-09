@@ -50,6 +50,7 @@ public class Devoir2
     private static PreparedStatement stmtVerificationProcesDecision;
     private static PreparedStatement stmtProcesJugeEnCours;
     private static PreparedStatement stmtVerificationProcesDevantJury;
+    private static PreparedStatement stmtSelectJugeDansProces;
 
     // Seance
     private static PreparedStatement stmtExisteSeance;
@@ -70,6 +71,7 @@ public class Devoir2
     private static PreparedStatement stmtInsertJuge;
     private static PreparedStatement stmtSelectJuges;
     private static PreparedStatement stmtRetirerJuge;
+    private static PreparedStatement stmtChangeDisponibiliteJuge;
 
     // Partie
     private static PreparedStatement stmtExistePartie;
@@ -135,6 +137,8 @@ public class Devoir2
                 .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ? and \"decision\" is null");
         stmtVerificationProcesDevantJury = cx.getConnection()
                 .prepareStatement("select from \"Proces\" where \"id\" = ? and \"devantJury\" = 1");
+        stmtSelectJugeDansProces = cx.getConnection()
+                .prepareStatement("select \"Juge_id\" from \"Proces\" where \"id\" = ?");
 
         // Seance
         stmtExisteSeance = cx.getConnection().prepareStatement("select * from \"Seance\" where id = ?");
@@ -158,18 +162,20 @@ public class Devoir2
                         + "values (?,?,?,?,?,null)");
 
         // Juge
-        stmtSelectJuges = cx.getConnection().prepareStatement("select * from \"Juge\" where \"statutActif\" = false");
+        stmtSelectJuges = cx.getConnection().prepareStatement("select * from \"Juge\" where \"disponible\" = true");
         stmtExisteJuge = cx.getConnection().prepareStatement("select * from \"Juge\" where \"id\" = ?");
         stmtInsertJuge = cx.getConnection()
                 .prepareStatement("insert into \"Juge\" (\"id\", \"prenom\", \"nom\", \"age\") " + "values (?,?,?,?)");
         stmtRetirerJuge = cx.getConnection()
-                .prepareStatement("update \"Juge\" set \"statutActif\" =  false where \"id\" = ?");
+                .prepareStatement("update \"Juge\" set \"quitterJustice\" = true, \"disponible\" = false where \"id\" = ?");
+        stmtChangeDisponibiliteJuge = cx.getConnection()
+                .prepareStatement("update \"Juge\" set \"disponible\" = ? where \"id\" = ?");
 
         // Partie
         stmtExistePartie = cx.getConnection().prepareStatement("select * from \"Partie\" where \"id\" = ?");
         stmtInsertPartie = cx.getConnection().prepareStatement(
                 "insert into \"Partie\" (\"id\", \"prenom\", \"nom\", \"Avocat_id\") " + "values (?,?,?,?)");
-
+        
         // Avocat
         stmtExisteAvocat = cx.getConnection().prepareStatement("select * from \"Avocat\" where \"id\" = ?");
         stmtInsertAvocat = cx.getConnection()
@@ -398,7 +404,7 @@ public class Devoir2
 
             // Affichage des elements du proces conernes
             System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getInt(2) + "\t" + rsetProces.getString(3)
-                    + "\t" + rsetProces.getInt(4) + "\t" + rsetProces.getInt(5) + "\t" + rsetProces.getInt(6));
+                    + "\t" + rsetProces.getInt(4) + "\t" + rsetProces.getInt(5) + "\t" + rsetProces.getInt(6) + "\t" + (rsetProces.getObject(7) != null ? rsetProces.getInt(7) : "non termine"));
 
             rsetProces.close();
 
@@ -414,7 +420,7 @@ public class Devoir2
                 do
                 {
                     System.out.println(
-                            rsetProces.getInt(1) + "\t" + rsetProces.getString(2) + "\t" + rsetProces.getInt(3));
+                            rsetProces.getInt(1) + "\t" + rsetProces.getInt(2) + "\t" + rsetProces.getString(3));
                 }
                 while (rsetProces.next());
 
@@ -425,7 +431,6 @@ public class Devoir2
                 System.out.println("Aucune seance n'est liee au proces " + idProces);
                 rsetProces.close();
             }
-                
 
             cx.commit();
         }
@@ -487,6 +492,8 @@ public class Devoir2
      */
     private static void effectuerTerminerProces(int idProces, int decisionProces) throws SQLException, IFT287Exception
     {
+        int idJuge = 0;
+
         try
         {
             // Verification de la valeur de la decision
@@ -521,6 +528,29 @@ public class Devoir2
             stmtTerminerProces.setInt(1, decisionProces);
             stmtTerminerProces.setInt(2, idProces);
             stmtTerminerProces.executeUpdate();
+
+            // Rendre le juge disponible si il n'a plus de proces en cours
+            stmtSelectJugeDansProces.setInt(1, idProces);
+            rsetTermineProces = stmtSelectJugeDansProces.executeQuery();
+            
+            if (rsetTermineProces.next())
+            {
+                idJuge = rsetTermineProces.getInt(1);
+            }
+            
+            rsetTermineProces.close();
+
+            stmtProcesJugeEnCours.setInt(1, idJuge);
+            rsetTermineProces = stmtProcesJugeEnCours.executeQuery();
+
+            if (!rsetTermineProces.next())
+            {
+                stmtChangeDisponibiliteJuge.setBoolean(1, true);
+                stmtChangeDisponibiliteJuge.setInt(2, idJuge);
+                stmtChangeDisponibiliteJuge.executeUpdate();
+            }
+
+            rsetTermineProces.close();
 
             // Suppresion des seances prevues du proces
             stmtSupprimerSeancesProcesTermine.setInt(1, idProces);
@@ -640,8 +670,8 @@ public class Devoir2
 
             // Ajout de la seance
             stmtInsertSeance.setInt(1, idSeance);
-            stmtInsertSeance.setDate(2, dateSeance);
-            stmtInsertSeance.setInt(3, idProces);
+            stmtInsertSeance.setInt(2, idProces);
+            stmtInsertSeance.setDate(3, dateSeance);
             stmtInsertSeance.executeUpdate();
 
             cx.commit();
@@ -832,6 +862,11 @@ public class Devoir2
             stmtInsertProces.setInt(5, idPartieDefenderesse);
             stmtInsertProces.setInt(6, idPartiePoursuivante);
             stmtInsertProces.executeUpdate();
+            
+            // Rendre le juge non disponible
+            stmtChangeDisponibiliteJuge.setBoolean(1, false);
+            stmtChangeDisponibiliteJuge.setInt(2, idJuge);
+            stmtChangeDisponibiliteJuge.executeUpdate();
 
             cx.commit();
         }
