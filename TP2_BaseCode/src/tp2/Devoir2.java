@@ -49,6 +49,7 @@ public class Devoir2
     private static PreparedStatement stmtTerminerProces;
     private static PreparedStatement stmtVerificationProcesDecision;
     private static PreparedStatement stmtProcesJugeEnCours;
+    private static PreparedStatement stmtVerificationProcesDevantJury;
 
     // Seance
     private static PreparedStatement stmtExisteSeance;
@@ -68,7 +69,7 @@ public class Devoir2
     private static PreparedStatement stmtExisteJuge;
     private static PreparedStatement stmtInsertJuge;
     private static PreparedStatement stmtSelectJuges;
-    private static PreparedStatement stmtSupprimerJuge;
+    private static PreparedStatement stmtRetirerJuge;
 
     // Partie
     private static PreparedStatement stmtExistePartie;
@@ -132,6 +133,8 @@ public class Devoir2
                         + "values (?,?,?,?,?,?)");
         stmtProcesJugeEnCours = cx.getConnection()
                 .prepareStatement("select * from \"Proces\" where \"Juge_id\" = ? and \"decision\" is null");
+        stmtVerificationProcesDevantJury = cx.getConnection()
+                .prepareStatement("select from \"Proces\" where \"id\" = ? and \"devantJury\" = 1");
 
         // Seance
         stmtExisteSeance = cx.getConnection().prepareStatement("select * from \"Seance\" where id = ?");
@@ -159,7 +162,7 @@ public class Devoir2
         stmtExisteJuge = cx.getConnection().prepareStatement("select * from \"Juge\" where \"id\" = ?");
         stmtInsertJuge = cx.getConnection()
                 .prepareStatement("insert into \"Juge\" (\"id\", \"prenom\", \"nom\", \"age\") " + "values (?,?,?,?)");
-        stmtSupprimerJuge = cx.getConnection()
+        stmtRetirerJuge = cx.getConnection()
                 .prepareStatement("update \"Juge\" set \"statutActif\" =  false where \"id\" = ?");
 
         // Partie
@@ -403,22 +406,26 @@ public class Devoir2
             stmtExisteProcesDansSeance.setInt(1, idProces);
             rsetProces = stmtExisteProcesDansSeance.executeQuery();
 
-            if (!rsetProces.next())
+            if (rsetProces.next())
             {
+                System.out.println("\nListe des seances liees au proces " + idProces + " :");
+
+                // Affichage des seances liees au proces
+                do
+                {
+                    System.out.println(
+                            rsetProces.getInt(1) + "\t" + rsetProces.getString(2) + "\t" + rsetProces.getInt(3));
+                }
+                while (rsetProces.next());
+
                 rsetProces.close();
-                throw new IFT287Exception("Aucune seance n'est liee au proces " + idProces);
             }
-
-            System.out.println("\nListe des seances liees au proces " + idProces + " :");
-
-            // Affichage des seances liees au proces
-            do
+            else
             {
-                System.out.println(rsetProces.getInt(1) + "\t" + rsetProces.getString(2) + "\t" + rsetProces.getInt(3));
+                System.out.println("Aucune seance n'est liee au proces " + idProces);
+                rsetProces.close();
             }
-            while (rsetProces.next());
-
-            rsetProces.close();
+                
 
             cx.commit();
         }
@@ -482,6 +489,11 @@ public class Devoir2
     {
         try
         {
+            // Verification de la valeur de la decision
+            if (decisionProces != 0 && decisionProces != 1)
+                throw new IFT287Exception("Impossible de terminer le proces " + idProces
+                        + "car la valeur de la decision n'est ni 0 ni 1.");
+
             // Vérification que le proces existe
             stmtExisteProces.setInt(1, idProces);
             ResultSet rsetTermineProces = stmtExisteProces.executeQuery();
@@ -653,18 +665,41 @@ public class Devoir2
     {
         try
         {
+            // Verification du nas du jury
+            stmtExisteJury.setInt(1, nasJury);
+            ResultSet rsetAssignerJury = stmtExisteJury.executeQuery();
+
+            if (!rsetAssignerJury.next())
+            {
+                rsetAssignerJury.close();
+                throw new IFT287Exception("Le jury " + nasJury + " n'existe pas.");
+            }
+            rsetAssignerJury.close();
+
             // Verification de l'id du proces
             stmtExisteProces.setInt(1, idProces);
-            ResultSet rsetJuryDansProces = stmtExisteProces.executeQuery();
+            rsetAssignerJury = stmtExisteProces.executeQuery();
 
-            if (!rsetJuryDansProces.next())
+            if (!rsetAssignerJury.next())
             {
-                rsetJuryDansProces.close();
+                rsetAssignerJury.close();
                 throw new IFT287Exception("Le proces " + idProces + " n'existe pas.");
             }
-            rsetJuryDansProces.close();
+            rsetAssignerJury.close();
 
-            // Ajout du jury au proces concernce
+            // Verification que le proces doit se tenir devant un jury
+            // "devantJury = 1"
+            stmtVerificationProcesDevantJury.setInt(1, idProces);
+            rsetAssignerJury = stmtVerificationProcesDevantJury.executeQuery();
+
+            if (!rsetAssignerJury.next())
+            {
+                rsetAssignerJury.close();
+                throw new IFT287Exception("Le proces " + idProces + " doit se tenir devant un juge seul");
+            }
+            rsetAssignerJury.close();
+
+            // Ajout du jury au proces concerne
             stmtInsertJuryDansProces.setInt(1, idProces);
             stmtInsertJuryDansProces.setInt(2, nasJury);
             stmtInsertJuryDansProces.executeUpdate();
@@ -713,7 +748,6 @@ public class Devoir2
             stmtInsertJury.setInt(5, ageJury);
             stmtInsertJury.executeUpdate();
 
-            // Commit
             cx.commit();
         }
         catch (Exception e)
@@ -740,6 +774,10 @@ public class Devoir2
     {
         try
         {
+            if (devantJury != 0 && devantJury != 1)
+                throw new IFT287Exception("Impossible de creer le proces " + idProces
+                        + "car le champ devantJury ne peut être que 0 ou 1");
+
             // Verification que le proces n'existe pas deja
             stmtExisteProces.setInt(1, idProces);
             ResultSet rsetCreerProces = stmtExisteProces.executeQuery();
@@ -872,6 +910,7 @@ public class Devoir2
     {
         try
         {
+            // Verification que l'id avocat n'existe pas deja
             stmtExisteAvocat.setInt(1, idAvocat);
             ResultSet rsetAvocat = stmtExisteAvocat.executeQuery();
 
@@ -935,8 +974,8 @@ public class Devoir2
 
             // Retire le juge concerne de la liste des juges actifs et
             // disponibles
-            stmtSupprimerJuge.setInt(1, idJuge);
-            stmtSupprimerJuge.executeUpdate();
+            stmtRetirerJuge.setInt(1, idJuge);
+            stmtRetirerJuge.executeUpdate();
 
             cx.commit();
         }
