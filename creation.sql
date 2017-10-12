@@ -20,7 +20,8 @@ CREATE TABLE  "Juge" (
   "prenom" VARCHAR(45) NOT NULL,
   "nom" VARCHAR(45) NOT NULL,
   "age" INT NOT NULL,
-  "statutActif" BOOLEAN NOT NULL DEFAULT true,
+  "disponible" BOOLEAN NOT NULL DEFAULT true,
+  "quitterJustice" BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY ("id"));
 
 
@@ -40,8 +41,8 @@ CREATE TABLE  "Avocat" (
 -- -----------------------------------------------------
 CREATE TABLE  "Partie" (
   "id" INT UNIQUE,
-  "prenom" VARCHAR(45) NULL,
-  "nom" VARCHAR(45) NULL,
+  "prenom" VARCHAR(45) NOT NULL,
+  "nom" VARCHAR(45) NOT NULL,
   "Avocat_id" INT NOT NULL,
   PRIMARY KEY ("id", "Avocat_id"),
   CONSTRAINT "fk_Partie_Avocat"
@@ -85,8 +86,8 @@ CREATE TABLE  "Proces" (
 -- -----------------------------------------------------
 CREATE TABLE  "Seance" (
   "id" INT UNIQUE,
-  "date" TIMESTAMP NOT NULL,
   "Proces_id" INT NOT NULL,
+  "date" TIMESTAMP NOT NULL,
   PRIMARY KEY ("id", "Proces_id"),
   CONSTRAINT "fk_Seance_Procès1"
     FOREIGN KEY ("Proces_id")
