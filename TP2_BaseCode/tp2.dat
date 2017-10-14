@@ -1,0 +1,21 @@
+ajouterJuge 1 Dieu ToutPuissant 6000
+ajouterJuge 2 John Doe 58
+ajouterAvocat 1 Jean Mange 0
+ajouterAvocat 2 Jean Sairien 1
+ajouterPartie 1 Don Corleone 1
+ajouterPartie 2 Elizabeth Deux 2
+retirerJuge 1
+inscrireJury 123456789 Joe Blau M 28
+inscrireJury 987654321 John Deere M 62
+inscrireJury 741852963 Lady Di F 56
+creerProces 1 2 2017-09-16 1 1 2
+assignerJury 987654321 1
+assignerJury 123456789 1
+ajouterSeance 1 1 2017-10-23
+supprimerSeance 1
+terminerProces 1 0
+creerProces 2 2 2017-10-31 0 2 1
+afficherJuges
+afficherProces 1
+afficherJurys
+quitter
