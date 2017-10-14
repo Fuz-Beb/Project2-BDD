@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 -- Affichage de la table Avocat
 SELECT * FROM "Avocat";
 

@@ -150,7 +150,7 @@ public class Devoir2
                 .prepareStatement("select * from \"Seance\" where \"id\" = ? and \"date\" < current_date");
         stmtSupprimerSeance = cx.getConnection().prepareStatement("delete from \"Seance\" where \"id\" = ?");
         stmtInsertSeance = cx.getConnection()
-                .prepareStatement("insert into \"Seance\" (\"id\", \"date\", \"Proces_id\") " + "values (?,?,?)");
+                .prepareStatement("insert into \"Seance\" (\"id\", \"Proces_id\", \"date\") values (?,?,?)");
 
         // Jury
         stmtSelectJurys = cx.getConnection().prepareStatement("select * from \"Jury\" where \"Proces_id\" is null");
@@ -165,7 +165,7 @@ public class Devoir2
         stmtSelectJuges = cx.getConnection().prepareStatement("select * from \"Juge\" where \"disponible\" = true");
         stmtExisteJuge = cx.getConnection().prepareStatement("select * from \"Juge\" where \"id\" = ?");
         stmtInsertJuge = cx.getConnection()
-                .prepareStatement("insert into \"Juge\" (\"id\", \"prenom\", \"nom\", \"age\") " + "values (?,?,?,?)");
+                .prepareStatement("insert into \"Juge\" (\"id\", \"prenom\", \"nom\", \"age\") values (?,?,?,?)");
         stmtRetirerJuge = cx.getConnection()
                 .prepareStatement("update \"Juge\" set \"quitterJustice\" = true, \"disponible\" = false where \"id\" = ?");
         stmtChangeDisponibiliteJuge = cx.getConnection()
@@ -174,12 +174,12 @@ public class Devoir2
         // Partie
         stmtExistePartie = cx.getConnection().prepareStatement("select * from \"Partie\" where \"id\" = ?");
         stmtInsertPartie = cx.getConnection().prepareStatement(
-                "insert into \"Partie\" (\"id\", \"prenom\", \"nom\", \"Avocat_id\") " + "values (?,?,?,?)");
+                "insert into \"Partie\" (\"id\", \"prenom\", \"nom\", \"Avocat_id\") values (?,?,?,?)");
         
         // Avocat
         stmtExisteAvocat = cx.getConnection().prepareStatement("select * from \"Avocat\" where \"id\" = ?");
         stmtInsertAvocat = cx.getConnection()
-                .prepareStatement("insert into \"Avocat\" (id, prenom, nom, type) " + "values (?,?,?,?)");
+                .prepareStatement("insert into \"Avocat\" (id, prenom, nom, type) values (?,?,?,?)");
     }
 
     /**
@@ -351,22 +351,19 @@ public class Devoir2
         {
             // Récupération de la liste des jurys
             ResultSet rsetJury = stmtSelectJurys.executeQuery();
-
-            if (!rsetJury.next())
-            {
-                rsetJury.close();
-                throw new IFT287Exception("Aucun jury n'est disponible !");
-            }
-
+            
             System.out.println("\n\nListe des jurys : ");
 
-            // Affichage de la liste des jurys
-            do
+            // Si il y a des jurys
+            if (rsetJury.next())
             {
-                System.out.println(rsetJury.getInt(1) + "\t" + rsetJury.getString(2) + "\t" + rsetJury.getString(3)
-                        + "\t" + rsetJury.getString(4) + "\t" + rsetJury.getInt(5));
+                do
+                {
+                    System.out.println(rsetJury.getInt(1) + "\t" + rsetJury.getString(2) + "\t" + rsetJury.getString(3)
+                            + "\t" + rsetJury.getString(4) + "\t" + rsetJury.getInt(5));
+                }
+                while (rsetJury.next());
             }
-            while (rsetJury.next());
 
             rsetJury.close();
 
@@ -454,22 +451,19 @@ public class Devoir2
         {
             // Récupération de la liste des juges actifs et disponibles
             ResultSet rsetJuges = stmtSelectJuges.executeQuery();
-
-            if (!rsetJuges.next())
-            {
-                rsetJuges.close();
-                throw new IFT287Exception("Aucun juge n'est actuellement actif et disponible.");
-            }
-
+            
             System.out.println("\nListe des juges actifs et disponibles :");
 
-            // Affichage de la liste des juges actifs et disponibles
-            do
+            if (rsetJuges.next())
             {
-                System.out.println(rsetJuges.getInt(1) + "\t" + rsetJuges.getString(2) + "\t" + rsetJuges.getString(3)
-                        + "\t" + rsetJuges.getInt(4));
+                // Affichage de la liste des juges actifs et disponibles
+                do
+                {
+                    System.out.println(rsetJuges.getInt(1) + "\t" + rsetJuges.getString(2) + "\t" + rsetJuges.getString(3)
+                            + "\t" + rsetJuges.getInt(4));
+                }
+                while (rsetJuges.next());    
             }
-            while (rsetJuges.next());
 
             rsetJuges.close();
 
